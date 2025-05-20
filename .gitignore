@@ -68,3 +68,8 @@ Thumbs.db
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Ignore all files in the src/data directory
+# except for the .gitkeep file, which is used to keep the directory tracked by git
+src/data/*
+!src/data/.gitkeep
