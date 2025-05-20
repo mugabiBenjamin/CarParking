@@ -43,32 +43,28 @@ CarParking is a simple Java-based parking lot management system. It provides a g
 ## Project Structure
 
 ```plaintext
-CarParkingSystem/
-│
-├── Main.java                             # Entry point
-│
-├── controller/
-│   └── ParkingController.java            # Handles user actions
-│
-├── model/
-│   ├── Car.java                          # Car object
-│   ├── ParkingSlot.java                  # Individual slot
-│   ├── ParkingLot.java                   # Manages all slots
-│   └── FileHelper.java                   # File I/O utilities
-│
-├── view/
-│   ├── ParkingView.java                  # Main GUI
-│   ├── ParkingSlotPanel.java            # Visual slot unit
-│   └── MessageBox.java                   # Alerts/info popups
-│
-├── util/
-│   ├── Validator.java                    # Input validation helpers
-│   └── Logger.java                       # Simple logging class
-│
-├── data/
-│   └── parking_lot.txt                   # Saves slot status
-│
-└── README.md                             # Project overview + instructions
+CarParking/
+├─ src/
+│  ├─ controller/
+│  │  └─ ParkingController.java        # Handles user actions and updates the model/view
+│  ├─ data/
+│  │  └─ parking_lot.txt               # Stores persistent parking lot data
+│  ├─ model/
+│  │  ├─ Car.java                      # Represents a car object
+│  │  ├─ FileHelper.java               # Utility for file read/write operations
+│  │  ├─ ParkingLot.java               # Manages parking slots and cars
+│  │  └─ ParkingSlot.java              # Represents a single parking slot
+│  ├─ util/
+│  │  ├─ Logger.java                   # Simple logging utility for actions/errors
+│  │  └─ Validator.java                # Validates user input and car details
+│  ├─ view/
+│  │  ├─ MessageBox.java               # Displays alerts and messages to the user
+│  │  ├─ ParkingSlotPanel.java         # GUI component for individual parking slots
+│  │  └─ ParkingView.java              # Main GUI window for the application
+│  └─ Main.java                        # Application entry point
+├─ .gitignore                          # Git ignore rules
+├─ LICENSE                             # Project license
+└─ README.md                           # Project documentation
 ```
 
 ## Contributing
@@ -76,9 +72,25 @@ CarParkingSystem/
 Contributions are welcome! To contribute:
 
 1. Fork the repository
-2. Create a new branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
+
+2. Create a new branch
+
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+
+3. Commit your changes
+
+   ```bash
+   git commit -am 'Add new feature'
+   ```
+
+4. Push to the branch
+
+   ```bash
+   git push origin feature/your-feature
+   ```
+
 5. Open a pull request
 
 ## License

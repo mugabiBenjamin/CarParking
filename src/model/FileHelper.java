@@ -5,7 +5,7 @@ import java.util.*;
 
 public class FileHelper {
 
-    private static final String FILE_PATH = "data/parking_lot.txt";
+    private static final String FILE_PATH = "src/data/parking_lot.txt";
 
     // Load slot occupancy state from file
     public static List<String> loadSlotData() {
@@ -46,9 +46,9 @@ public class FileHelper {
 
     // Ensure data folder exists
     public static void ensureDataFolderExists() {
-        File dir = new File("data");
+        File dir = new File("src/data");
         if (!dir.exists()) {
-            dir.mkdir();
+            dir.mkdirs();
         }
     }
 }
