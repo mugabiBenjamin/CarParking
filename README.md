@@ -13,9 +13,9 @@ CarParking is a simple Java-based parking lot management system. It provides a g
 
 ## Prerequisites
 
-- Java Development Kit (JDK) 8 or higher
-- A Java IDE (e.g., IntelliJ IDEA, Eclipse, VS Code) or terminal access
-- Git (optional, for cloning the repository)
+- [Java Development Kit (JDK) 8 or higher](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) _(**Recommended:** [OpenJDK](https://adoptium.net/))_
+- A Java IDE (e.g., [IntelliJ IDEA](https://www.jetbrains.com/idea/download/), [Eclipse](https://www.eclipse.org/downloads/), [VS Code](https://code.visualstudio.com/Download)) or terminal access
+- [Git](https://git-scm.com/downloads) (optional, for cloning the repository)
 
 ## Installation and Usage
 
