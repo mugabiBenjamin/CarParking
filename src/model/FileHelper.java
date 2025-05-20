@@ -1,11 +1,18 @@
 package model;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class FileHelper {
 
-    private static final String FILE_PATH = "src/data/parking_lot.txt";
+    private static final String FILE_PATH = getStoragePath();
+
+    private static String getStoragePath() {
+        // Dynamically get the absolute path to the parking_lot.txt file
+        String baseDir = System.getProperty("user.dir");
+        return Paths.get(baseDir, "src", "data", "parking_lot.txt").toString();
+    }
 
     // Load slot occupancy state from file
     public static List<String> loadSlotData() {
@@ -30,6 +37,7 @@ public class FileHelper {
 
     // Save current state of all slots
     public static void saveSlotData(List<ParkingSlot> slots) {
+        ensureDataFolderExists(); // ensure directory exists before saving
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
             for (ParkingSlot slot : slots) {
                 if (slot.isOccupied()) {
@@ -46,9 +54,10 @@ public class FileHelper {
 
     // Ensure data folder exists
     public static void ensureDataFolderExists() {
-        File dir = new File("src/data");
+        File file = new File(FILE_PATH);
+        File dir = file.getParentFile(); // gets src/data folder
         if (!dir.exists()) {
-            dir.mkdirs();
+            dir.mkdirs(); // create directories if missing
         }
     }
 }
