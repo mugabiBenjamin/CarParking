@@ -56,7 +56,9 @@ public class ParkingView extends JFrame {
         add(new JScrollPane(slotPanel), BorderLayout.CENTER);
 
         // Status bar
-        JLabel statusBar = new JLabel(" Ready");
+        // Status bar with padding and centered text
+        JLabel statusBar = new JLabel("Ready", SwingConstants.CENTER);
+        statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); // Top and bottom padding
         add(statusBar, BorderLayout.SOUTH);
 
         // Action listeners
