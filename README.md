@@ -183,6 +183,10 @@ Contributions are welcome! To contribute:
 
 5. Open a pull request
 
+## Issues
+
+If you encounter any issues or bugs, feel free to [open an issue](https://github.com/mugabiBenjamin/CarParking/issues).
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
