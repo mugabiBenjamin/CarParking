@@ -1,32 +1,61 @@
 package model;
 
 import java.io.*;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 
 public class FileHelper {
 
-    private static final String FILE_PATH = getStoragePath();
+    private static String FILE_PATH;
+    private static final String DEFAULT_CONFIG_PATH = "config.properties";
 
-    private static String getStoragePath() {
-        // Dynamically get the absolute path to the parking_lot.txt file
-        String baseDir = System.getProperty("user.dir");
-        return Paths.get(baseDir, "src", "data", "parking_lot.txt").toString();
+    static {
+        // Initialize path from configuration
+        initializeFilePath();
     }
 
-    // Load slot occupancy state from file
+    private static void initializeFilePath() {
+        // First try to load from config file
+        try {
+            Properties properties = new Properties();
+            File configFile = new File(DEFAULT_CONFIG_PATH);
+
+            if (configFile.exists()) {
+                try (FileInputStream fis = new FileInputStream(configFile)) {
+                    properties.load(fis);
+                    String configuredPath = properties.getProperty("parking.data.file");
+
+                    if (configuredPath != null && !configuredPath.isBlank()) {
+                        // Convert to absolute path based on user.dir
+                        Path basePath = Paths.get(System.getProperty("user.dir"));
+                        Path absolutePath = basePath.resolve(configuredPath).normalize();
+                        FILE_PATH = absolutePath.toString();
+                        System.out.println("Using configured data path: " + FILE_PATH);
+                        return;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading configuration: " + e.getMessage());
+        }
+
+        // Fallback to a sensible default if config loading fails
+        FILE_PATH = Paths.get(System.getProperty("user.dir"), "data", "parking_lot.txt").toString();
+        System.out.println("Using default data path: " + FILE_PATH);
+    }
+
     public static List<String> loadSlotData() {
         List<String> data = new ArrayList<>();
         File file = new File(FILE_PATH);
 
         if (!file.exists()) {
-            return data; // return empty list if file doesn't exist
+            return data;
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                data.add(line.trim()); // each line: slotNumber,plateNumber or "EMPTY"
+                data.add(line.trim());
             }
         } catch (IOException e) {
             System.err.println("Error reading parking lot data: " + e.getMessage());
@@ -35,9 +64,9 @@ public class FileHelper {
         return data;
     }
 
-    // Save current state of all slots
     public static void saveSlotData(List<ParkingSlot> slots) {
-        ensureDataFolderExists(); // ensure directory exists before saving
+        ensureDataFolderExists();
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
             for (ParkingSlot slot : slots) {
                 if (slot.isOccupied()) {
@@ -52,12 +81,16 @@ public class FileHelper {
         }
     }
 
-    // Ensure data folder exists
     public static void ensureDataFolderExists() {
         File file = new File(FILE_PATH);
-        File dir = file.getParentFile(); // gets src/data folder
-        if (!dir.exists()) {
-            dir.mkdirs(); // create directories if missing
+        File dir = file.getParentFile();
+        if (dir != null && !dir.exists()) {
+            boolean created = dir.mkdirs();
+            if (created) {
+                System.out.println("Created directory: " + dir.getAbsolutePath());
+            } else {
+                System.err.println("Failed to create directory: " + dir.getAbsolutePath());
+            }
         }
     }
 }
