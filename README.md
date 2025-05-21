@@ -95,6 +95,21 @@ The interface consists of three main sections:
 - **Parking Slots Display:** The central area shows all parking slots with their current status.
 - **Status Bar:** Located at the bottom, providing feedback on operations.
 
+## Configuration
+
+The `config.properties` file contains application-specific settings that determine where data is stored. This file should not be pushed to GitHub as it may contain user-specific paths. You may customize the storage location by modifying the `parking.data.file` property. The path can be:
+
+- Relative to the application's working directory (recommended for portability)
+
+  ```properties
+  # Application Configuration
+  parking.data.file=data/parking_lot.txt
+  ```
+
+- **parking.data.file:** Specifies the path to the parking data file (relative to the project root)
+
+The application will automatically create any necessary directories specified in this path.
+
 ## Project Structure
 
 ```plaintext
