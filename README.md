@@ -32,6 +32,8 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 
 2. Create the configuration file: **Linux/macOS:**
 
+   **Note:** Ensure the `config.properties` file is in the root directory when running the app.
+
    ```bash
    echo "# Application Configuration
    parking.data.file=data/parking_lot.txt" > config.properties
