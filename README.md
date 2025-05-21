@@ -7,12 +7,13 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 
 ## Features
 
-- Add and remove cars from parking slots
-- Visual representation of parking slots and their status
-- Persistent storage of parking lot data
-- Input validation for car details
-- User-friendly alerts and messages
-- Simple logging for actions and errors
+- **User-friendly GUI** developed with Java Swing, showing color-coded parking slots (green for available, red for occupied) for at-a-glance status and live updates on parking and unparking actions.
+- **Real-time parking management** with visual display of occupied and available slots, along with vehicle registration by license plate during parking.
+- **Search functionality** to locate parked vehicles by license plate number, with visual highlighting and feedback.
+- **Persistent storage** using file-based data, configurable via `config.properties`, ensuring parking data is retained across sessions.
+- **Car plate validation** to ensure correct format during parking operations.
+- **MVC-like architecture** for clear separation of concerns, enhancing maintainability.
+- **Logging system** for tracking parking, unparking, and search actions, aiding in monitoring system activity.
 
 ## Prerequisites
 
