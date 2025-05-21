@@ -7,15 +7,18 @@ import model.ParkingSlot;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
-// import java.util.Optional;
 
 // Custom rounded border class
 class RoundedBorder implements Border {
     private int radius;
+    private int thickness;
 
-    RoundedBorder(int radius) {
+    RoundedBorder(int radius, int thickness) {
         this.radius = radius;
+        this.thickness = thickness;
     }
 
     @Override
@@ -23,6 +26,7 @@ class RoundedBorder implements Border {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(c.getBackground().darker());
+        g2.setStroke(new BasicStroke(thickness));
         g2.draw(new RoundRectangle2D.Double(x, y, width - 1, height - 1, radius, radius));
         g2.dispose();
     }
@@ -65,8 +69,16 @@ public class ParkingView extends JFrame {
     // Custom rounded border for input fields and buttons
     private Border createRoundedBorder() {
         return BorderFactory.createCompoundBorder(
-                new RoundedBorder(8), // 8 pixel radius
+                new RoundedBorder(8, 1), // 8 pixel radius, 1px thickness
                 BorderFactory.createEmptyBorder(5, 10, 5, 10) // Padding inside components
+        );
+    }
+
+    // Custom rounded border for hover state
+    private Border createHoverBorder() {
+        return BorderFactory.createCompoundBorder(
+                new RoundedBorder(8, 2), // 8 pixel radius, 2px thickness for hover
+                BorderFactory.createEmptyBorder(5, 10, 5, 10) // Same padding
         );
     }
 
@@ -117,7 +129,6 @@ public class ParkingView extends JFrame {
         updateSlots();
         add(new JScrollPane(slotPanel), BorderLayout.CENTER);
 
-        // Status bar
         // Status bar with padding and centered text
         JLabel statusBar = new JLabel("Ready", SwingConstants.CENTER);
         statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); // Top and bottom padding
@@ -180,22 +191,30 @@ public class ParkingView extends JFrame {
             btn.setToolTipText("Slot " + slot.getNumber());
 
             // Apply rounded border to slot buttons
-            btn.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8),
-                    BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-            btn.setBorder(BorderFactory.createCompoundBorder(
-                    new RoundedBorder(8),
-                    BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-            // Add these two lines to prevent focus rectangle
+            btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
+
+            // Add hover effect
+            btn.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    Color baseColor = slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR;
+                    btn.setBorder(createHoverBorder());
+                    btn.setBackground(baseColor.darker()); // Slightly darker color
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    btn.setBorder(createRoundedBorder());
+                    btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
+                }
+            });
 
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
                 if (slot.isOccupied()) {
-                    int confirm = JOptionPane.showConfirmDialog(this,
+                    int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
                             "Remove car " + slot.getCar().getPlateNumber() + " from Slot " + slotNumber + "?",
                             "Confirm Removal", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
