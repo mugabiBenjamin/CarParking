@@ -53,6 +53,7 @@ public class ParkingSlotPanel extends JPanel {
         button.setForeground(TEXT_COLOR);
         button.setToolTipText("Slot " + slotNumber);
         button.setFocusable(false);
+        button.setFocusPainted(false);  // Remove focus outline
 
         // Set preferred size to make button wider
         button.setPreferredSize(new Dimension(180, 40));
