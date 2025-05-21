@@ -14,6 +14,11 @@ public class ParkingView extends JFrame {
     private JPanel slotPanel;
     private ParkingLot lot;
 
+    // Define custom colors
+    private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green
+    private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light Red
+    private final Color TEXT_COLOR = Color.BLACK; // Black text
+
     public ParkingView() {
         setTitle("Car Parking System");
         setSize(600, 500); // Increased height to accommodate search panel
@@ -108,14 +113,14 @@ public class ParkingView extends JFrame {
 
             if (slot.isOccupied()) {
                 btn.setText("<html><center>" + slot.getCar().toString() +
-                        "<br><small>(Click to remove)</small></center></html>");
-                btn.setBackground(Color.RED);
+                        "<br><br><small>(Click to remove)</small></center></html>");
+                btn.setBackground(OCCUPIED_SLOT_COLOR);
             } else {
                 btn.setText("Empty");
-                btn.setBackground(Color.GREEN);
+                btn.setBackground(EMPTY_SLOT_COLOR);
             }
 
-            btn.setForeground(Color.WHITE);
+            btn.setForeground(TEXT_COLOR);
             btn.setToolTipText("Slot " + slot.getNumber());
 
             int slotNumber = slot.getNumber();
@@ -147,6 +152,7 @@ public class ParkingView extends JFrame {
             if (comp instanceof JButton) {
                 JButton btn = (JButton) comp;
                 btn.setBackground(Color.BLUE); // Highlight color
+                btn.setForeground(Color.WHITE); // White text for better contrast on blue
                 Timer timer = new Timer(2000, e -> updateSlots()); // Reset after 2 seconds
                 timer.setRepeats(false);
                 timer.start();
