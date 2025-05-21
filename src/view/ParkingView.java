@@ -5,8 +5,38 @@ import model.ParkingLot;
 import model.ParkingSlot;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 // import java.util.Optional;
+
+// Custom rounded border class
+class RoundedBorder implements Border {
+    private int radius;
+
+    RoundedBorder(int radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(c.getBackground().darker());
+        g2.draw(new RoundRectangle2D.Double(x, y, width - 1, height - 1, radius, radius));
+        g2.dispose();
+    }
+
+    @Override
+    public Insets getBorderInsets(Component c) {
+        return new Insets(radius / 2, radius / 2, radius / 2, radius / 2);
+    }
+
+    @Override
+    public boolean isBorderOpaque() {
+        return false;
+    }
+}
 
 public class ParkingView extends JFrame {
     private ParkingController controller;
@@ -32,20 +62,44 @@ public class ParkingView extends JFrame {
         setVisible(true);
     }
 
+    // Custom rounded border for input fields and buttons
+    private Border createRoundedBorder() {
+        return BorderFactory.createCompoundBorder(
+                new RoundedBorder(8), // 8 pixel radius
+                BorderFactory.createEmptyBorder(5, 10, 5, 10) // Padding inside components
+        );
+    }
+
     private void initUI() {
         // Top panel for parking cars
         JPanel topPanel = new JPanel(new FlowLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0)); // Top and bottom padding
-        plateInput = new JTextField(10);
+
+        // Create and style plate input field
+        plateInput = new JTextField(15); // Increased from 10 to 15 for wider input
+        plateInput.setBorder(createRoundedBorder());
+        plateInput.setPreferredSize(new Dimension(200, 30)); // Set explicit width
+
+        // Create and style park button
         JButton parkBtn = new JButton("Park");
+        parkBtn.setBorder(createRoundedBorder());
+
         topPanel.add(new JLabel("Plate Number:"));
         topPanel.add(plateInput);
         topPanel.add(parkBtn);
 
         // Search panel
         JPanel searchPanel = new JPanel(new FlowLayout());
-        JTextField searchInput = new JTextField(10);
+
+        // Create and style search input field
+        JTextField searchInput = new JTextField(15); // Increased from 10 to 15 for wider input
+        searchInput.setBorder(createRoundedBorder());
+        searchInput.setPreferredSize(new Dimension(200, 30)); // Set explicit width
+
+        // Create and style search button
         JButton searchBtn = new JButton("Search");
+        searchBtn.setBorder(createRoundedBorder());
+
         searchPanel.add(new JLabel("Search Plate:"));
         searchPanel.add(searchInput);
         searchPanel.add(searchBtn);
@@ -122,6 +176,11 @@ public class ParkingView extends JFrame {
 
             btn.setForeground(TEXT_COLOR);
             btn.setToolTipText("Slot " + slot.getNumber());
+
+            // Apply rounded border to slot buttons
+            btn.setBorder(BorderFactory.createCompoundBorder(
+                    new RoundedBorder(8),
+                    BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
