@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 
 class RoundedBorder implements Border {
     private int radius;
@@ -59,6 +60,20 @@ public class ParkingView extends JFrame {
         setSize(600, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+
+        // Set window icon (cross-platform, relative path)
+        try {
+            // Use getResourceAsStream for cross-platform resource loading
+            InputStream iconStream = getClass().getResourceAsStream("/resources/icons/car.png");
+            if (iconStream != null) {
+                BufferedImage icon = ImageIO.read(iconStream);
+                setIconImage(icon);
+            } else {
+                System.err.println("Icon resource not found: /resources/icons/car.png");
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load window icon: " + e.getMessage());
+        }
 
         this.lot = new ParkingLot(10);
         this.controller = new ParkingController(lot);
