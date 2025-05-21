@@ -4,14 +4,16 @@ import controller.ParkingController;
 import model.ParkingLot;
 import model.ParkingSlot;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
-// Custom rounded border class
 class RoundedBorder implements Border {
     private int radius;
     private int thickness;
@@ -48,93 +50,114 @@ public class ParkingView extends JFrame {
     private JPanel slotPanel;
     private ParkingLot lot;
 
-    // Define custom colors
     private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green
     private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light Red
     private final Color TEXT_COLOR = Color.BLACK; // Black text
 
     public ParkingView() {
         setTitle("Car Parking System");
-        setSize(600, 500); // Increased height to accommodate search panel
+        setSize(600, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        this.lot = new ParkingLot(10); // 10 slots
+        this.lot = new ParkingLot(10);
         this.controller = new ParkingController(lot);
 
         initUI();
         setVisible(true);
     }
 
-    // Custom rounded border for input fields and buttons
     private Border createRoundedBorder() {
         return BorderFactory.createCompoundBorder(
-                new RoundedBorder(8, 1), // 8 pixel radius, 1px thickness
-                BorderFactory.createEmptyBorder(5, 10, 5, 10) // Padding inside components
-        );
+                new RoundedBorder(8, 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10));
     }
 
-    // Custom rounded border for hover state
     private Border createHoverBorder() {
         return BorderFactory.createCompoundBorder(
-                new RoundedBorder(8, 2), // 8 pixel radius, 2px thickness for hover
-                BorderFactory.createEmptyBorder(5, 10, 5, 10) // Same padding
-        );
+                new RoundedBorder(8, 2),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10));
+    }
+
+    private ImageIcon createCarIcon(int width, int height) {
+        try {
+            // Load the PNG from the resources folder
+            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/car.png"));
+
+            // Create a new BufferedImage for the resized image
+            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = resizedImage.createGraphics();
+
+            // Apply rendering hints for smooth scaling
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Scale the image to the desired dimensions
+            g2.drawImage(originalImage, 0, 0, width, height, null);
+            g2.dispose();
+
+            return new ImageIcon(resizedImage);
+        } catch (IOException e) {
+            System.err.println("Failed to load PNG icon: " + e.getMessage());
+            // Create a fallback icon with the specified dimensions
+            BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = fallback.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.BLACK);
+            // Scale the fallback icon proportionally
+            int scale = Math.min(width / 24, height / 16); // Base size: 24x16
+            g2.fillRect(4 * scale, 4 * scale, 16 * scale, 8 * scale);
+            g2.fillOval(6 * scale, 10 * scale, 4 * scale, 4 * scale);
+            g2.fillOval(14 * scale, 10 * scale, 4 * scale, 4 * scale);
+            g2.fillRect(8 * scale, 2 * scale, 8 * scale, 4 * scale);
+            g2.dispose();
+            return new ImageIcon(fallback);
+        }
     }
 
     private void initUI() {
-        // Top panel for parking cars
         JPanel topPanel = new JPanel(new FlowLayout());
-        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0)); // Top and bottom padding
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
-        // Create and style plate input field
-        plateInput = new JTextField(15); // Increased from 10 to 15 for wider input
+        plateInput = new JTextField(15);
         plateInput.setBorder(createRoundedBorder());
-        plateInput.setPreferredSize(new Dimension(200, 30)); // Set explicit width
+        plateInput.setPreferredSize(new Dimension(200, 30));
 
-        // Create and style park button
         JButton parkBtn = new JButton("Park");
         parkBtn.setBorder(createRoundedBorder());
-        parkBtn.setFocusPainted(false); // Prevent focus rectangle
+        parkBtn.setFocusPainted(false);
 
         topPanel.add(new JLabel("Plate Number:"));
         topPanel.add(plateInput);
         topPanel.add(parkBtn);
 
-        // Search panel
         JPanel searchPanel = new JPanel(new FlowLayout());
-
-        // Create and style search input field
-        JTextField searchInput = new JTextField(15); // Increased from 10 to 15 for wider input
+        JTextField searchInput = new JTextField(15);
         searchInput.setBorder(createRoundedBorder());
-        searchInput.setPreferredSize(new Dimension(200, 30)); // Set explicit width
+        searchInput.setPreferredSize(new Dimension(200, 30));
 
-        // Create and style search button
         JButton searchBtn = new JButton("Search");
         searchBtn.setBorder(createRoundedBorder());
-        searchBtn.setFocusPainted(false); // Prevent focus rectangle
+        searchBtn.setFocusPainted(false);
 
         searchPanel.add(new JLabel("Search Plate:"));
         searchPanel.add(searchInput);
         searchPanel.add(searchBtn);
 
-        // Combine top panels
         JPanel controlPanel = new JPanel(new GridLayout(2, 1));
         controlPanel.add(topPanel);
         controlPanel.add(searchPanel);
         add(controlPanel, BorderLayout.NORTH);
 
-        // Parking slots panel
-        slotPanel = new JPanel(new GridLayout(2, 5, 5, 5)); // Added gaps between slots
+        slotPanel = new JPanel(new GridLayout(2, 5, 5, 5));
         updateSlots();
         add(new JScrollPane(slotPanel), BorderLayout.CENTER);
 
-        // Status bar with padding and centered text
         JLabel statusBar = new JLabel("Ready", SwingConstants.CENTER);
-        statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); // Top and bottom padding
+        statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         add(statusBar, BorderLayout.SOUTH);
 
-        // Action listeners
         parkBtn.addActionListener(e -> {
             controller.parkCar(plateInput.getText());
             updateSlots();
@@ -151,7 +174,6 @@ public class ParkingView extends JFrame {
             boolean found = false;
             int foundSlot = -1;
 
-            // Search for the car
             for (ParkingSlot slot : lot.getSlots()) {
                 if (slot.isOccupied() && slot.getCar().getPlateNumber().equalsIgnoreCase(searchPlate)) {
                     found = true;
@@ -175,12 +197,17 @@ public class ParkingView extends JFrame {
 
     private void updateSlots() {
         slotPanel.removeAll();
+        ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels
+
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
 
             if (slot.isOccupied()) {
                 btn.setText("<html><center>" + slot.getCar().toString() +
                         "<br><br><small>(Click to remove)</small></center></html>");
+                btn.setIcon(carIcon);
+                btn.setHorizontalTextPosition(SwingConstants.CENTER);
+                btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setBackground(OCCUPIED_SLOT_COLOR);
             } else {
                 btn.setText("Empty");
@@ -189,19 +216,16 @@ public class ParkingView extends JFrame {
 
             btn.setForeground(TEXT_COLOR);
             btn.setToolTipText("Slot " + slot.getNumber());
-
-            // Apply rounded border to slot buttons
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
 
-            // Add hover effect
             btn.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     Color baseColor = slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR;
                     btn.setBorder(createHoverBorder());
-                    btn.setBackground(baseColor.darker()); // Slightly darker color
+                    btn.setBackground(baseColor.darker());
                 }
 
                 @Override
@@ -231,17 +255,14 @@ public class ParkingView extends JFrame {
     }
 
     private void highlightSlot(int slotNumber) {
-        // Reset all buttons to normal state
         updateSlots();
-
-        // Highlight the found slot
         if (slotNumber > 0 && slotNumber <= lot.getSlots().size()) {
             Component comp = slotPanel.getComponent(slotNumber - 1);
             if (comp instanceof JButton) {
                 JButton btn = (JButton) comp;
-                btn.setBackground(Color.BLUE); // Highlight color
-                btn.setForeground(Color.WHITE); // White text for better contrast on blue
-                Timer timer = new Timer(2000, e -> updateSlots()); // Reset after 2 seconds
+                btn.setBackground(Color.BLUE);
+                btn.setForeground(Color.WHITE);
+                Timer timer = new Timer(2000, e -> updateSlots());
                 timer.setRepeats(false);
                 timer.start();
             }
