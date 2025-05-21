@@ -73,3 +73,5 @@ desktop.ini
 # except for the .gitkeep file, which is used to keep the directory tracked by git
 src/data/*
 !src/data/.gitkeep
+
+config.properties
