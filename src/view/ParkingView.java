@@ -30,6 +30,7 @@ public class ParkingView extends JFrame {
     private void initUI() {
         // Top panel for parking cars
         JPanel topPanel = new JPanel(new FlowLayout());
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0)); // Top and bottom padding
         plateInput = new JTextField(10);
         JButton parkBtn = new JButton("Park");
         topPanel.add(new JLabel("Plate Number:"));
