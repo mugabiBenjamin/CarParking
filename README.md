@@ -67,6 +67,34 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 
 _The GUI should launch, allowing you to manage parking slots._
 
+## Usage
+
+### Managing Vehicles
+
+1. **Parking a Car:**
+
+   - Enter the license plate number in the `Plate Number` field.
+   - Click the `Park` button to assign the vehicle to the first available slot.
+
+2. **Finding a Car:**
+
+   - Enter the license plate number in the "`Search Plate` field.
+   - Click the `Search` button to locate the parked vehicle.
+   - If found, the slot will be highlighted in blue for 2 seconds.
+
+3. **Removing a Car:**
+
+   - Click on an occupied parking slot (red) to remove the parked vehicle.
+   - Confirm the removal when prompted.
+
+### User Interface Guide
+
+The interface consists of three main sections:
+
+- **Control Panel:** Located at the top of the window, containing the input fields and buttons for parking and finding vehicles.
+- **Parking Slots Display:** The central area shows all parking slots with their current status.
+- **Status Bar:** Located at the bottom, providing feedback on operations.
+
 ## Project Structure
 
 ```plaintext
