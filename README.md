@@ -116,27 +116,27 @@ The application will automatically create any necessary directories specified in
 CarParking/
 ├─ src/
 │  ├─ controller/
-│  │  └─ ParkingController.java
+│  │  └─ ParkingController.java           # Handles user actions and updates model/view
 │  ├─ data/
-│  │  ├─ parking_lot.txt
-│  │  └─ .gitkeep
+│  │  ├─ parking_lot.txt                  # Stores parking slot data (generated at runtime)
+│  │  └─ .gitkeep                         # Ensures data/ directory is tracked by git
 │  ├─ model/
-│  │  ├─ Car.java
-│  │  ├─ FileHelper.java
-│  │  ├─ ParkingLot.java
-│  │  └─ ParkingSlot.java
+│  │  ├─ Car.java                         # Represents a car with license plate info
+│  │  ├─ FileHelper.java                  # Utility for reading/writing parking data files
+│  │  ├─ ParkingLot.java                  # Manages parking slots and car assignments
+│  │  └─ ParkingSlot.java                 # Represents an individual parking slot
 │  ├─ util/
-│  │  ├─ Logger.java
-│  │  └─ Validator.java
+│  │  ├─ Logger.java                      # Logs parking, unparking, and search actions
+│  │  └─ Validator.java                   # Validates license plate formats and inputs
 │  ├─ view/
-│  │  ├─ MessageBox.java
-│  │  ├─ ParkingSlotPanel.java
-│  │  └─ ParkingView.java
-│  └─ Main.java
-├─ config.properties
-├─ .gitignore
-├─ LICENSE
-└─ README.md
+│  │  ├─ MessageBox.java                  # Utility for displaying dialog messages
+│  │  ├─ ParkingSlotPanel.java            # GUI component for displaying a parking slot
+│  │  └─ ParkingView.java                 # Main GUI window and layout
+│  └─ Main.java                           # Application entry point
+├─ config.properties                      # Configuration file for data storage path
+├─ .gitignore                             # Specifies files/folders to ignore in git
+├─ LICENSE                                # Project license (MIT)
+└─ README.md                              # Project documentation
 ```
 
 ## Contributing
