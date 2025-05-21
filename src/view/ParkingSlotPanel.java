@@ -3,7 +3,37 @@ package view;
 import model.ParkingSlot;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
+
+// Custom rounded border class (duplicate of the one in ParkingView for completeness)
+class RoundedBorder implements Border {
+    private int radius;
+
+    RoundedBorder(int radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(c.getBackground().darker());
+        g2.draw(new RoundRectangle2D.Double(x, y, width - 1, height - 1, radius, radius));
+        g2.dispose();
+    }
+
+    @Override
+    public Insets getBorderInsets(Component c) {
+        return new Insets(radius / 2, radius / 2, radius / 2, radius / 2);
+    }
+
+    @Override
+    public boolean isBorderOpaque() {
+        return false;
+    }
+}
 
 public class ParkingSlotPanel extends JPanel {
     private JButton button;
@@ -23,6 +53,14 @@ public class ParkingSlotPanel extends JPanel {
         button.setForeground(TEXT_COLOR);
         button.setToolTipText("Slot " + slotNumber);
         button.setFocusable(false);
+
+        // Set preferred size to make button wider
+        button.setPreferredSize(new Dimension(180, 40));
+
+        // Apply rounded border with padding
+        button.setBorder(BorderFactory.createCompoundBorder(
+                new RoundedBorder(8),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
 
         this.add(button, BorderLayout.CENTER);
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
