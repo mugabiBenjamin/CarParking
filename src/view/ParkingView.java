@@ -83,6 +83,7 @@ public class ParkingView extends JFrame {
         // Create and style park button
         JButton parkBtn = new JButton("Park");
         parkBtn.setBorder(createRoundedBorder());
+        parkBtn.setFocusPainted(false); // Prevent focus rectangle
 
         topPanel.add(new JLabel("Plate Number:"));
         topPanel.add(plateInput);
@@ -99,6 +100,7 @@ public class ParkingView extends JFrame {
         // Create and style search button
         JButton searchBtn = new JButton("Search");
         searchBtn.setBorder(createRoundedBorder());
+        searchBtn.setFocusPainted(false); // Prevent focus rectangle
 
         searchPanel.add(new JLabel("Search Plate:"));
         searchPanel.add(searchInput);
@@ -181,6 +183,14 @@ public class ParkingView extends JFrame {
             btn.setBorder(BorderFactory.createCompoundBorder(
                     new RoundedBorder(8),
                     BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+            btn.setBorder(BorderFactory.createCompoundBorder(
+                    new RoundedBorder(8),
+                    BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+            // Add these two lines to prevent focus rectangle
+            btn.setFocusPainted(false);
+            btn.setContentAreaFilled(true);
 
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
