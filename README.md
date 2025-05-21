@@ -139,6 +139,24 @@ CarParking/
 └─ README.md                              # Project documentation
 ```
 
+## Development Notes
+
+### Advantages of the Current Structure
+
+#### Src-based Structure
+
+- Industry-standard convention compatible with build tools like Maven and Gradle
+- Clear separation of source code from project artifacts
+- Easier integration with CI/CD pipelines
+- Support for conventional test directory structure
+- Cleaner project root directory
+
+#### Data Persistence Implementation
+
+- The application uses a configuration-based approach for data storage locations
+- Path resolution is handled automatically across different operating systems
+- Directories are created automatically if they don't exist
+
 ## Contributing
 
 Contributions are welcome! To contribute:
