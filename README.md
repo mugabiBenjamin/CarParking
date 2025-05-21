@@ -139,6 +139,9 @@ CarParking/
 │  │  ├─ FileHelper.java                  # Utility for reading/writing parking data files
 │  │  ├─ ParkingLot.java                  # Manages parking slots and car assignments
 │  │  └─ ParkingSlot.java                 # Represents an individual parking slot
+│  ├─ resources/
+│  │  └─ icons/
+│  │     └─ car.png                       # Car icon for parking slots
 │  ├─ util/
 │  │  ├─ Logger.java                      # Logs parking, unparking, and search actions
 │  │  └─ Validator.java                   # Validates license plate formats and inputs
