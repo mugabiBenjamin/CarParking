@@ -1,5 +1,8 @@
 # CarParking
 
+![Java](https://img.shields.io/badge/Java-17-blue)
+![Swing](https://img.shields.io/badge/GUI-Swing-orange)
+
 CarParking is a simple Java-based parking lot management system. It provides a graphical user interface (GUI) for managing parking slots, registering cars, and tracking slot availability. The system is designed for educational purposes and demonstrates basic principles of object-oriented programming, file I/O, and GUI development in Java.
 
 ## Features
