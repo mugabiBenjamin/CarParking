@@ -21,28 +21,49 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 - A Java IDE (e.g., [IntelliJ IDEA](https://www.jetbrains.com/idea/download/), [Eclipse](https://www.eclipse.org/downloads/), [VS Code](https://code.visualstudio.com/Download)) or terminal access
 - [Git](https://git-scm.com/downloads) (optional, for cloning the repository)
 
-## Installation and Usage
+## Installation
 
-1. **Clone the repository:**
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/mugabiBenjamin/CarParking.git
-   cd CarParkingSystem
+   cd CarParking
    ```
 
-2. **Compile the project:**
+2. Create the configuration file: **Linux/macOS:**
 
    ```bash
-   javac Main.java
+   echo "# Application Configuration
+   parking.data.file=data/parking_lot.txt" > config.properties
    ```
 
-3. **Run the application:**
+   **Windows (Command Prompt):**
+
+   ```cmd
+   echo # Application Configuration > config.properties
+   echo parking.data.file=data/parking_lot.txt >> config.properties
+   ```
+
+   **Windows (Powershell):**
+
+   ```powershell
+   echo # Application Configuration > config.properties
+   echo parking.data.file=data/parking_lot.txt >> config.properties
+   ```
+
+3. Compile the project:
 
    ```bash
-   java Main
+   javac -d bin src/**/*.java src/*.java
    ```
 
-   The GUI should launch, allowing you to manage parking slots.
+4. Run the application:
+
+   ```bash
+   java -cp bin Main
+   ```
+
+_The GUI should launch, allowing you to manage parking slots._
 
 ## Project Structure
 
@@ -50,25 +71,27 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 CarParking/
 ├─ src/
 │  ├─ controller/
-│  │  └─ ParkingController.java        # Handles user actions and updates the model/view
+│  │  └─ ParkingController.java
 │  ├─ data/
-│  │  └─ parking_lot.txt               # Stores persistent parking lot data
+│  │  ├─ parking_lot.txt
+│  │  └─ .gitkeep
 │  ├─ model/
-│  │  ├─ Car.java                      # Represents a car object
-│  │  ├─ FileHelper.java               # Utility for file read/write operations
-│  │  ├─ ParkingLot.java               # Manages parking slots and cars
-│  │  └─ ParkingSlot.java              # Represents a single parking slot
+│  │  ├─ Car.java
+│  │  ├─ FileHelper.java
+│  │  ├─ ParkingLot.java
+│  │  └─ ParkingSlot.java
 │  ├─ util/
-│  │  ├─ Logger.java                   # Simple logging utility for actions/errors
-│  │  └─ Validator.java                # Validates user input and car details
+│  │  ├─ Logger.java
+│  │  └─ Validator.java
 │  ├─ view/
-│  │  ├─ MessageBox.java               # Displays alerts and messages to the user
-│  │  ├─ ParkingSlotPanel.java         # GUI component for individual parking slots
-│  │  └─ ParkingView.java              # Main GUI window for the application
-│  └─ Main.java                        # Application entry point
-├─ .gitignore                          # Git ignore rules
-├─ LICENSE                             # Project license
-└─ README.md                           # Project documentation
+│  │  ├─ MessageBox.java
+│  │  ├─ ParkingSlotPanel.java
+│  │  └─ ParkingView.java
+│  └─ Main.java
+├─ config.properties
+├─ .gitignore
+├─ LICENSE
+└─ README.md
 ```
 
 ## Contributing
