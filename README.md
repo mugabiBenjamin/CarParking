@@ -5,6 +5,20 @@
 
 This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. It allows users to park, unpark, and search cars by license plate, providing real-time feedback and automatic slot management. Parking data is stored in local text files for persistence across sessions. Designed mainly for educational purposes, it demonstrates object-oriented programming, file I/O, and GUI development, offering a simple, user-friendly parking lot management tool.
 
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [Development Notes](#development-notes)
+- [Contributing](#contributing)
+- [Issues](#issues)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
+
 ## Features
 
 - **User-friendly GUI** developed with Java Swing, showing color-coded parking slots (green for available, red for occupied) for at-a-glance status and live updates on parking and unparking actions.
@@ -191,7 +205,7 @@ If you encounter any issues or bugs, feel free to [open an issue](https://github
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Acknowledgements
+## Acknowledgments
 
 - Java Swing documentation for GUI components
 - Open-source Java tutorials and resources
