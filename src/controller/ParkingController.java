@@ -20,14 +20,14 @@ public class ParkingController {
 
     public void parkCar(String plate) {
         if (plate.isBlank()) {
-            MessageBox.showError("Plate number is required.");
+            MessageBox.showError("License plate is required.");
             return;
         }
 
         // Check if car is already parked
         Optional<ParkingSlot> existingCar = findCarByPlate(plate);
         if (existingCar.isPresent()) {
-            MessageBox.showError("Car with plate " + plate + " is already parked in slot " +
+            MessageBox.showError("Car with license plate " + plate + " is already parked in slot " +
                     existingCar.get().getNumber());
             return;
         }
@@ -61,6 +61,7 @@ public class ParkingController {
         }
     }
 
+    // Find a car by its license plate
     public Optional<ParkingSlot> findCarByPlate(String plate) {
         return lot.getSlots().stream()
                 .filter(slot -> slot.isOccupied() &&

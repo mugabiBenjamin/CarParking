@@ -44,6 +44,7 @@ public class FileHelper {
         System.out.println("Using default data path: " + FILE_PATH);
     }
 
+    // Load license plate data for parking slots
     public static List<String> loadSlotData() {
         List<String> data = new ArrayList<>();
         File file = new File(FILE_PATH);
@@ -58,12 +59,13 @@ public class FileHelper {
                 data.add(line.trim());
             }
         } catch (IOException e) {
-            System.err.println("Error reading parking lot data: " + e.getMessage());
+            System.err.println("Error reading license plate data: " + e.getMessage());
         }
 
         return data;
     }
 
+    // Save license plate data for parking slots
     public static void saveSlotData(List<ParkingSlot> slots) {
         ensureDataFolderExists();
 
@@ -77,7 +79,7 @@ public class FileHelper {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.err.println("Error writing parking lot data: " + e.getMessage());
+            System.err.println("Error writing license plate data: " + e.getMessage());
         }
     }
 
