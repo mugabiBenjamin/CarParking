@@ -301,17 +301,18 @@ public class ParkingView extends JFrame {
             plateInput.setForeground(PLACEHOLDER_COLOR);
         });
 
-        // Search action with actionable error messages
+        // Search action with standardized, actionable error messages
         searchBtn.addActionListener(e -> {
             // Clear placeholder text before processing
             String searchPlate = searchInput.getText().equals("Enter AAA 123B") ? "" : searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
-                MessageBox.showError("Enter a valid license plate (e.g., AAA 123B).");
+                MessageBox.showError("Search failed for license plate: Enter a valid license plate (e.g., AAA 123B).");
                 return;
             }
 
             if (!Validator.isValidPlate(searchPlate)) {
-                MessageBox.showError("Invalid license plate format, use AAA 123B.");
+                MessageBox.showError(
+                        "Search failed for license plate " + searchPlate + ": Invalid format, use AAA 123B.");
                 return;
             }
 
@@ -329,10 +330,11 @@ public class ParkingView extends JFrame {
             if (found) {
                 statusBar.setText("Found car with license plate " + searchPlate + " in slot " + foundSlot);
                 highlightSlot(foundSlot);
-                MessageBox.showInfo("Car found in slot " + foundSlot);
+                MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
             } else {
                 statusBar.setText("Car with license plate " + searchPlate + " not found");
-                MessageBox.showInfo("No car with license plate " + searchPlate + " is currently parked");
+                MessageBox
+                        .showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
             }
 
             searchInput.setText("Enter AAA 123B");
