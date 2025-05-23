@@ -100,7 +100,7 @@ public class ParkingView extends JFrame {
 
     private ImageIcon createCarIcon(int width, int height) {
         try {
-            // Load the PNG from the resources folder
+            // Load the PNG from the resources folder for slots or park button
             BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/car.png"));
 
             // Create a new BufferedImage for the resized image
@@ -199,9 +199,12 @@ public class ParkingView extends JFrame {
             }
         });
 
-        JButton parkBtn = new JButton("Park");
+        // Park button with car icon for UI memorability
+        JButton parkBtn = new JButton("Park", createCarIcon(16, 16));
         parkBtn.setBorder(createRoundedBorder());
         parkBtn.setFocusPainted(false);
+        parkBtn.setIconTextGap(4);
+        parkBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
 
         topPanel.add(new JLabel("License Plate:"));
         topPanel.add(plateInput);
@@ -306,7 +309,7 @@ public class ParkingView extends JFrame {
 
     private void updateSlots() {
         slotPanel.removeAll();
-        ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels
+        ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for slots
 
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
