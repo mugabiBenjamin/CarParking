@@ -27,7 +27,6 @@ class RoundedBorder implements Border {
         this.thickness = thickness;
     }
 
-    // Paint the border with a rounded rectangle, implementing Border interface
     @Override
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
         Graphics2D g2 = (Graphics2D) g.create();
@@ -54,6 +53,7 @@ public class ParkingView extends JFrame {
     private JTextField plateInput;
     private JPanel slotPanel;
     private ParkingLot lot;
+    private volatile boolean isDialogOpen = false; // Prevents multiple unpark dialogs
 
     // Colors for slot displays, used consistently for empty and occupied slots
     private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green for empty slots
@@ -69,7 +69,6 @@ public class ParkingView extends JFrame {
 
         // Set window icon (cross-platform, relative path)
         try {
-            // Use getResourceAsStream for cross-platform resource loading
             InputStream iconStream = getClass().getResourceAsStream("/resources/icons/car.png");
             if (iconStream != null) {
                 BufferedImage icon = ImageIO.read(iconStream);
@@ -102,31 +101,21 @@ public class ParkingView extends JFrame {
 
     private ImageIcon createCarIcon(int width, int height) {
         try {
-            // Load the PNG from the resources folder for slots or park button
             BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/car.png"));
-
-            // Create a new BufferedImage for the resized image
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = resizedImage.createGraphics();
-
-            // Apply rendering hints for smooth scaling
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            // Scale the image to the desired dimensions
             g2.drawImage(originalImage, 0, 0, width, height, null);
             g2.dispose();
-
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
             System.err.println("Failed to load PNG icon: " + e.getMessage());
-            // Create a fallback icon with the specified dimensions
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
-            // Scale the fallback icon proportionally
             int scale = Math.min(width / 24, height / 16); // Base size: 24x16
             g2.fillRect(4 * scale, 4 * scale, 16 * scale, 8 * scale);
             g2.fillOval(6 * scale, 10 * scale, 4 * scale, 4 * scale);
@@ -139,35 +128,25 @@ public class ParkingView extends JFrame {
 
     private ImageIcon createSearchIcon(int width, int height) {
         try {
-            // Load the search PNG from the resources folder
             BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/search.png"));
-
-            // Create a new BufferedImage for the resized image
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = resizedImage.createGraphics();
-
-            // Apply rendering hints for smooth scaling
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            // Scale the image to the desired dimensions
             g2.drawImage(originalImage, 0, 0, width, height, null);
             g2.dispose();
-
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
             System.err.println("Failed to load search PNG icon: " + e.getMessage());
-            // Create a fallback search icon (magnifying glass)
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
-            // Draw a simple magnifying glass
             int scale = Math.min(width / 16, height / 16); // Base size: 16x16
             g2.setStroke(new BasicStroke(2 * scale));
-            g2.drawOval(4 * scale, 4 * scale, 8 * scale, 8 * scale); // Circle
-            g2.drawLine(10 * scale, 10 * scale, 12 * scale, 12 * scale); // Handle
+            g2.drawOval(4 * scale, 4 * scale, 8 * scale, 8 * scale);
+            g2.drawLine(10 * scale, 10 * scale, 12 * scale, 12 * scale);
             g2.dispose();
             return new ImageIcon(fallback);
         }
@@ -175,31 +154,21 @@ public class ParkingView extends JFrame {
 
     private ImageIcon createHelpIcon(int width, int height) {
         try {
-            // Load the help PNG from the resources folder
             BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/help.png"));
-
-            // Create a new BufferedImage for the resized image
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = resizedImage.createGraphics();
-
-            // Apply rendering hints for smooth scaling
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            // Scale the image to the desired dimensions
             g2.drawImage(originalImage, 0, 0, width, height, null);
             g2.dispose();
-
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
             System.err.println("Failed to load help PNG icon: " + e.getMessage());
-            // Create a fallback help icon (question mark)
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
-            // Draw a simple question mark
             int scale = Math.min(width / 16, height / 16); // Base size: 16x16
             g2.setFont(new Font("SansSerif", Font.BOLD, 12 * scale));
             g2.drawString("?", 6 * scale, 12 * scale);
@@ -209,36 +178,27 @@ public class ParkingView extends JFrame {
     }
 
     private ImageIcon createCheckIcon(int width, int height) {
+        // Amortized cost is O(1) for icon creation per slot
         try {
-            // Load the checkmark PNG from the resources folder
             BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/check.png"));
-
-            // Create a new BufferedImage for the resized image
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = resizedImage.createGraphics();
-
-            // Apply rendering hints for smooth scaling
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            // Scale the image to the desired dimensions
             g2.drawImage(originalImage, 0, 0, width, height, null);
             g2.dispose();
-
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
             System.err.println("Failed to load checkmark PNG icon: " + e.getMessage());
-            // Create a fallback checkmark icon
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
-            // Draw a simple checkmark
             int scale = Math.min(width / 16, height / 16); // Base size: 16x16
             g2.setStroke(new BasicStroke(2 * scale));
-            g2.drawLine(4 * scale, 8 * scale, 7 * scale, 11 * scale); // Left part of check
-            g2.drawLine(7 * scale, 11 * scale, 12 * scale, 5 * scale); // Right part of check
+            g2.drawLine(4 * scale, 8 * scale, 7 * scale, 11 * scale);
+            g2.drawLine(7 * scale, 11 * scale, 12 * scale, 5 * scale);
             g2.dispose();
             return new ImageIcon(fallback);
         }
@@ -326,14 +286,14 @@ public class ParkingView extends JFrame {
                             "<p><b>Searching for a Car:</b> Enter a license plate in the search field and click 'Search'. If found, the slot highlights blue for 2 seconds.</p>"
                             +
                             "<p><b>Slot Status:</b><br>" +
-                            "- <font color='green'>Green</font>: Empty slot (checkmark icon).<br>" +
+                            "- <font color='green'>Green</font>: Empty slot (checkmark icon, not clickable).<br>" +
                             "- <font color='red'>Red</font>: Occupied slot (car icon, click to remove).<br>" +
                             "- <font color='blue'>Blue</font>: Highlighted slot (after search).</p>" +
                             "<p><b>Removing a Car:</b> Click an occupied (red) slot and confirm to unpark the car.</p>"
                             +
                             "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter). Placeholder text guides you.</p>"
                             +
-                            "<p><b>Status Bar:</b> Shows parking and search results at the bottom.</p>" +
+                            "<p><b>Status Bar:</b> Shows parking and search status at the bottom.</p>" +
                             "</html>",
                     "Help Guide",
                     JOptionPane.INFORMATION_MESSAGE);
@@ -485,37 +445,44 @@ public class ParkingView extends JFrame {
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setBackground(EMPTY_SLOT_COLOR);
+                btn.setEnabled(false); // Disable empty slots to prevent interaction
             }
 
             // Uniform styling for slot buttons with rounded border, hover effect, and
             // dynamic tooltip
             btn.setForeground(TEXT_COLOR);
-            btn.setToolTipText("Slot " + slot.getNumber() + ": "
-                    + (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (checkmark)"));
+            btn.setToolTipText("Slot " + slot.getNumber() + ": " +
+                    (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (checkmark, not clickable)"));
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
             btn.setMargin(new Insets(5, 10, 5, 10));
 
             btn.addMouseListener(new MouseAdapter() {
-                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR
+                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR for enabled
+                // buttons
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    Color baseColor = slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR;
-                    btn.setBorder(createHoverBorder());
-                    btn.setBackground(baseColor.darker());
+                    if (btn.isEnabled()) {
+                        Color baseColor = slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR;
+                        btn.setBorder(createHoverBorder());
+                        btn.setBackground(baseColor.darker());
+                    }
                 }
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    btn.setBorder(createRoundedBorder());
-                    btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
+                    if (btn.isEnabled()) {
+                        btn.setBorder(createRoundedBorder());
+                        btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
+                    }
                 }
             });
 
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
-                if (slot.isOccupied()) {
+                if (slot.isOccupied() && !isDialogOpen) {
+                    isDialogOpen = true;
                     int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
                             "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot "
                                     + slotNumber + "?",
@@ -524,6 +491,7 @@ public class ParkingView extends JFrame {
                         controller.unparkCar(slotNumber);
                         updateSlots();
                     }
+                    isDialogOpen = false;
                 }
             });
 
