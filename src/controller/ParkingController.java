@@ -38,7 +38,8 @@ public class ParkingController {
         if (slotOpt.isPresent()) {
             slotOpt.get().parkCar(car);
             Logger.log("Car parked: " + plate);
-            MessageBox.showInfo("Car parked in slot " + slotOpt.get().getNumber());
+            // Show message with license plate and slot number
+            MessageBox.showInfo("Car with license plate " + plate + " parked in slot " + slotOpt.get().getNumber());
 
             // Save updated parking data
             FileHelper.saveSlotData(lot.getSlots());
@@ -50,9 +51,11 @@ public class ParkingController {
     public void unparkCar(int slotNumber) {
         var slot = lot.getSlots().get(slotNumber - 1);
         if (slot.isOccupied()) {
+            String plate = slot.getCar().getPlateNumber();
             Logger.log("Car removed: " + slot.getCar());
             slot.removeCar();
-            MessageBox.showInfo("Car removed from slot " + slotNumber);
+            // Show message with license plate and slot number
+            MessageBox.showInfo("Car with license plate " + plate + " removed from slot " + slotNumber);
 
             // Save updated parking data
             FileHelper.saveSlotData(lot.getSlots());
