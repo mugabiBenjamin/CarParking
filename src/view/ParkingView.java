@@ -208,6 +208,42 @@ public class ParkingView extends JFrame {
         }
     }
 
+    private ImageIcon createCheckIcon(int width, int height) {
+        try {
+            // Load the checkmark PNG from the resources folder
+            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/check.png"));
+
+            // Create a new BufferedImage for the resized image
+            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = resizedImage.createGraphics();
+
+            // Apply rendering hints for smooth scaling
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Scale the image to the desired dimensions
+            g2.drawImage(originalImage, 0, 0, width, height, null);
+            g2.dispose();
+
+            return new ImageIcon(resizedImage);
+        } catch (IOException e) {
+            System.err.println("Failed to load checkmark PNG icon: " + e.getMessage());
+            // Create a fallback checkmark icon
+            BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = fallback.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.BLACK);
+            // Draw a simple checkmark
+            int scale = Math.min(width / 16, height / 16); // Base size: 16x16
+            g2.setStroke(new BasicStroke(2 * scale));
+            g2.drawLine(4 * scale, 8 * scale, 7 * scale, 11 * scale); // Left part of check
+            g2.drawLine(7 * scale, 11 * scale, 12 * scale, 5 * scale); // Right part of check
+            g2.dispose();
+            return new ImageIcon(fallback);
+        }
+    }
+
     private void initUI() {
         JPanel topPanel = new JPanel(new FlowLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
@@ -289,9 +325,9 @@ public class ParkingView extends JFrame {
                             +
                             "<p><b>Searching for a Car:</b> Enter a license plate in the search field and click 'Search'. If found, the slot highlights blue for 2 seconds.</p>"
                             +
-                            "<p><b>Slot Colors:</b><br>" +
-                            "- <font color='green'>Green</font>: Empty slot.<br>" +
-                            "- <font color='red'>Red</font>: Occupied slot (click to remove car).<br>" +
+                            "<p><b>Slot Status:</b><br>" +
+                            "- <font color='green'>Green</font>: Empty slot (checkmark icon).<br>" +
+                            "- <font color='red'>Red</font>: Occupied slot (car icon, click to remove).<br>" +
                             "- <font color='blue'>Blue</font>: Highlighted slot (after search).</p>" +
                             "<p><b>Removing a Car:</b> Click an occupied (red) slot and confirm to unpark the car.</p>"
                             +
@@ -428,10 +464,11 @@ public class ParkingView extends JFrame {
 
     private void updateSlots() {
         slotPanel.removeAll();
-        ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for slots
+        ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for occupied slots
+        ImageIcon checkIcon = createCheckIcon(32, 32); // Resize to 32x32 pixels for empty slots
 
-        // Create slot buttons with consistent EMPTY_SLOT_COLOR, OCCUPIED_SLOT_COLOR,
-        // and tooltips
+        // Create slot buttons with consistent car (occupied) and checkmark (empty)
+        // icons
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
 
@@ -444,14 +481,17 @@ public class ParkingView extends JFrame {
                 btn.setBackground(OCCUPIED_SLOT_COLOR);
             } else {
                 btn.setText("Empty");
+                btn.setIcon(checkIcon);
+                btn.setHorizontalTextPosition(SwingConstants.CENTER);
+                btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setBackground(EMPTY_SLOT_COLOR);
             }
 
             // Uniform styling for slot buttons with rounded border, hover effect, and
             // dynamic tooltip
             btn.setForeground(TEXT_COLOR);
-            btn.setToolTipText(
-                    "Slot " + slot.getNumber() + ": " + (slot.isOccupied() ? "Occupied, click to remove" : "Empty"));
+            btn.setToolTipText("Slot " + slot.getNumber() + ": "
+                    + (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (checkmark)"));
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
