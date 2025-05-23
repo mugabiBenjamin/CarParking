@@ -8,6 +8,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
@@ -54,6 +56,7 @@ public class ParkingView extends JFrame {
     private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green
     private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light Red
     private final Color TEXT_COLOR = Color.BLACK; // Black text
+    private final Color PLACEHOLDER_COLOR = Color.GRAY; // Color for placeholder text
 
     public ParkingView() {
         setTitle("Car Parking System");
@@ -135,9 +138,29 @@ public class ParkingView extends JFrame {
         JPanel topPanel = new JPanel(new FlowLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
+        // Input field for license plate with placeholder
         plateInput = new JTextField(15);
         plateInput.setBorder(createRoundedBorder());
         plateInput.setPreferredSize(new Dimension(200, 30));
+        plateInput.setText("Enter AAA 123B");
+        plateInput.setForeground(PLACEHOLDER_COLOR);
+        plateInput.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (plateInput.getText().equals("Enter AAA 123B")) {
+                    plateInput.setText("");
+                    plateInput.setForeground(TEXT_COLOR);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (plateInput.getText().isEmpty()) {
+                    plateInput.setText("Enter AAA 123B");
+                    plateInput.setForeground(PLACEHOLDER_COLOR);
+                }
+            }
+        });
 
         JButton parkBtn = new JButton("Park");
         parkBtn.setBorder(createRoundedBorder());
@@ -148,9 +171,29 @@ public class ParkingView extends JFrame {
         topPanel.add(parkBtn);
 
         JPanel searchPanel = new JPanel(new FlowLayout());
+        // Search input field for license plate with placeholder
         JTextField searchInput = new JTextField(15);
         searchInput.setBorder(createRoundedBorder());
         searchInput.setPreferredSize(new Dimension(200, 30));
+        searchInput.setText("Enter AAA 123B");
+        searchInput.setForeground(PLACEHOLDER_COLOR);
+        searchInput.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (searchInput.getText().equals("Enter AAA 123B")) {
+                    searchInput.setText("");
+                    searchInput.setForeground(TEXT_COLOR);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (searchInput.getText().isEmpty()) {
+                    searchInput.setText("Enter AAA 123B");
+                    searchInput.setForeground(PLACEHOLDER_COLOR);
+                }
+            }
+        });
 
         JButton searchBtn = new JButton("Search");
         searchBtn.setBorder(createRoundedBorder());
@@ -174,13 +217,17 @@ public class ParkingView extends JFrame {
         add(statusBar, BorderLayout.SOUTH);
 
         parkBtn.addActionListener(e -> {
-            controller.parkCar(plateInput.getText());
+            // Clear placeholder text before processing
+            String plateText = plateInput.getText().equals("Enter AAA 123B") ? "" : plateInput.getText();
+            controller.parkCar(plateText);
             updateSlots();
-            plateInput.setText("");
+            plateInput.setText("Enter AAA 123B");
+            plateInput.setForeground(PLACEHOLDER_COLOR);
         });
 
         searchBtn.addActionListener(e -> {
-            String searchPlate = searchInput.getText().trim();
+            // Clear placeholder text before processing
+            String searchPlate = searchInput.getText().equals("Enter AAA 123B") ? "" : searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
                 MessageBox.showError("Please enter a license plate to search");
                 return;
@@ -206,7 +253,8 @@ public class ParkingView extends JFrame {
                 MessageBox.showInfo("No car with license plate " + searchPlate + " is currently parked");
             }
 
-            searchInput.setText("");
+            searchInput.setText("Enter AAA 123B");
+            searchInput.setForeground(PLACEHOLDER_COLOR);
         });
     }
 
