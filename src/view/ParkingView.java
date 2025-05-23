@@ -54,6 +54,7 @@ public class ParkingView extends JFrame {
     private JTextField plateInput;
     private JPanel slotPanel;
     private ParkingLot lot;
+    private volatile boolean isDialogOpen = false; // Prevents multiple unpark dialogs
 
     // Colors for slot displays, used consistently for empty and occupied slots
     private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green for empty slots
@@ -326,8 +327,10 @@ public class ParkingView extends JFrame {
                             "<p><b>Searching for a Car:</b> Enter a license plate in the search field and click 'Search'. If found, the slot highlights blue for 2 seconds.</p>"
                             +
                             "<p><b>Slot Status:</b><br>" +
-                            "- <font color='green'>Green</font>: Empty slot (checkmark icon).<br>" +
-                            "- <font color='red'>Red</font>: Occupied slot (car icon, click to remove).<br>" +
+                            "- <font color='green'>Green</font>: Empty slot (checkmark icon). Empty slots are disabled and not clickable.<br>"
+                            +
+                            "- <font color='red'>Red</font>: Occupied slot (car icon). Click to open the unpark dialog.<br>"
+                            +
                             "- <font color='blue'>Blue</font>: Highlighted slot (after search).</p>" +
                             "<p><b>Removing a Car:</b> Click an occupied (red) slot and confirm to unpark the car.</p>"
                             +
@@ -467,8 +470,8 @@ public class ParkingView extends JFrame {
         ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for occupied slots
         ImageIcon checkIcon = createCheckIcon(32, 32); // Resize to 32x32 pixels for empty slots
 
-        // Create slot buttons with consistent car (occupied) and checkmark (empty)
-        // icons
+        // Create slot buttons with predictable behavior: occupied slots show unpark
+        // dialog, empty slots are disabled
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
 
@@ -485,37 +488,44 @@ public class ParkingView extends JFrame {
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setBackground(EMPTY_SLOT_COLOR);
+                btn.setEnabled(false); // Disable empty slots to prevent clicks
             }
 
             // Uniform styling for slot buttons with rounded border, hover effect, and
             // dynamic tooltip
             btn.setForeground(TEXT_COLOR);
             btn.setToolTipText("Slot " + slot.getNumber() + ": "
-                    + (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (checkmark)"));
+                    + (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (checkmark, not clickable)"));
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
             btn.setMargin(new Insets(5, 10, 5, 10));
 
             btn.addMouseListener(new MouseAdapter() {
-                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR
+                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR for enabled
+                // buttons
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    Color baseColor = slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR;
-                    btn.setBorder(createHoverBorder());
-                    btn.setBackground(baseColor.darker());
+                    if (btn.isEnabled()) {
+                        Color baseColor = slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR;
+                        btn.setBorder(createHoverBorder());
+                        btn.setBackground(baseColor.darker());
+                    }
                 }
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    btn.setBorder(createRoundedBorder());
-                    btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
+                    if (btn.isEnabled()) {
+                        btn.setBorder(createRoundedBorder());
+                        btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
+                    }
                 }
             });
 
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
-                if (slot.isOccupied()) {
+                if (slot.isOccupied() && !isDialogOpen) {
+                    isDialogOpen = true;
                     int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
                             "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot "
                                     + slotNumber + "?",
@@ -524,6 +534,7 @@ public class ParkingView extends JFrame {
                         controller.unparkCar(slotNumber);
                         updateSlots();
                     }
+                    isDialogOpen = false;
                 }
             });
 
@@ -545,6 +556,7 @@ public class ParkingView extends JFrame {
                 Timer timer = new Timer(2000, e -> {
                     btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
                     btn.setForeground(TEXT_COLOR);
+                    btn.setEnabled(!slot.isOccupied()); // Update enabled state after highlight
                 });
                 timer.setRepeats(false);
                 timer.start();
