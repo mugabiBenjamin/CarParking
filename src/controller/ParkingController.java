@@ -20,14 +20,15 @@ public class ParkingController {
     }
 
     public void parkCar(String plate) {
-        // Validate license plate input and provide actionable error messages
+        // Validate license plate input and provide standardized, actionable error
+        // messages
         if (plate.isBlank()) {
-            MessageBox.showError("Enter a valid license plate (e.g., AAA 123B).");
+            MessageBox.showError("Parking failed for license plate: Enter a valid license plate (e.g., AAA 123B).");
             return;
         }
 
         if (!Validator.isValidPlate(plate)) {
-            MessageBox.showError("Invalid license plate format, use AAA 123B.");
+            MessageBox.showError("Parking failed for license plate " + plate + ": Invalid format, use AAA 123B.");
             return;
         }
 
@@ -45,13 +46,12 @@ public class ParkingController {
         if (slotOpt.isPresent()) {
             slotOpt.get().parkCar(car);
             Logger.log("Car parked: " + plate);
-            // Show message with license plate and slot number
+            // Show standardized success message with license plate and slot number
             MessageBox.showInfo("Car with license plate " + plate + " parked in slot " + slotOpt.get().getNumber());
-
             // Save updated parking data
             FileHelper.saveSlotData(lot.getSlots());
         } else {
-            MessageBox.showError("Parking is full.");
+            MessageBox.showError("Parking failed: No available slots.");
         }
     }
 
@@ -61,13 +61,12 @@ public class ParkingController {
             String plate = slot.getCar().getPlateNumber();
             Logger.log("Car removed: " + slot.getCar());
             slot.removeCar();
-            // Show message with license plate and slot number
+            // Show standardized success message with license plate and slot number
             MessageBox.showInfo("Car with license plate " + plate + " removed from slot " + slotNumber);
-
             // Save updated parking data
             FileHelper.saveSlotData(lot.getSlots());
         } else {
-            MessageBox.showError("Slot already empty.");
+            MessageBox.showError("Unparking failed for slot " + slotNumber + ": Slot is already empty.");
         }
     }
 
