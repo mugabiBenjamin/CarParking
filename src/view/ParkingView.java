@@ -135,6 +135,42 @@ public class ParkingView extends JFrame {
         }
     }
 
+    private ImageIcon createSearchIcon(int width, int height) {
+        try {
+            // Load the search PNG from the resources folder
+            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/search.png"));
+
+            // Create a new BufferedImage for the resized image
+            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = resizedImage.createGraphics();
+
+            // Apply rendering hints for smooth scaling
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Scale the image to the desired dimensions
+            g2.drawImage(originalImage, 0, 0, width, height, null);
+            g2.dispose();
+
+            return new ImageIcon(resizedImage);
+        } catch (IOException e) {
+            System.err.println("Failed to load search PNG icon: " + e.getMessage());
+            // Create a fallback search icon (magnifying glass)
+            BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = fallback.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.BLACK);
+            // Draw a simple magnifying glass
+            int scale = Math.min(width / 16, height / 16); // Base size: 16x16
+            g2.setStroke(new BasicStroke(2 * scale));
+            g2.drawOval(4 * scale, 4 * scale, 8 * scale, 8 * scale); // Circle
+            g2.drawLine(10 * scale, 10 * scale, 12 * scale, 12 * scale); // Handle
+            g2.dispose();
+            return new ImageIcon(fallback);
+        }
+    }
+
     private void initUI() {
         JPanel topPanel = new JPanel(new FlowLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
@@ -196,9 +232,12 @@ public class ParkingView extends JFrame {
             }
         });
 
-        JButton searchBtn = new JButton("Search");
+        // Search button with magnifying glass icon for UI familiarity
+        JButton searchBtn = new JButton("Search", createSearchIcon(16, 16));
         searchBtn.setBorder(createRoundedBorder());
         searchBtn.setFocusPainted(false);
+        searchBtn.setIconTextGap(4);
+        searchBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
 
         searchPanel.add(new JLabel("Search License Plate:"));
         searchPanel.add(searchInput);
