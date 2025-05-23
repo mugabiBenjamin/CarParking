@@ -48,12 +48,13 @@ public class ParkingSlotPanel extends JPanel {
         this.slotNumber = slot.getNumber();
         this.setLayout(new BorderLayout());
 
+        // Set button text to license plate or "Empty"
         button = new JButton(slot.isOccupied() ? slot.getCar().getPlateNumber() : "Empty");
         button.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
         button.setForeground(TEXT_COLOR);
         button.setToolTipText("Slot " + slotNumber);
         button.setFocusable(false);
-        button.setFocusPainted(false);  // Remove focus outline
+        button.setFocusPainted(false); // Remove focus outline
 
         // Set preferred size to make button wider
         button.setPreferredSize(new Dimension(180, 40));
@@ -75,6 +76,7 @@ public class ParkingSlotPanel extends JPanel {
         return slotNumber;
     }
 
+    // Update button text with license plate or "Empty"
     public void update(ParkingSlot slot) {
         button.setText(slot.isOccupied() ? slot.getCar().getPlateNumber() : "Empty");
         button.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
