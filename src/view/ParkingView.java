@@ -3,6 +3,7 @@ package view;
 import controller.ParkingController;
 import model.ParkingLot;
 import model.ParkingSlot;
+import util.Validator;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -225,11 +226,17 @@ public class ParkingView extends JFrame {
             plateInput.setForeground(PLACEHOLDER_COLOR);
         });
 
+        // Search action with actionable error messages
         searchBtn.addActionListener(e -> {
             // Clear placeholder text before processing
             String searchPlate = searchInput.getText().equals("Enter AAA 123B") ? "" : searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
-                MessageBox.showError("Please enter a license plate to search");
+                MessageBox.showError("Enter a valid license plate (e.g., AAA 123B).");
+                return;
+            }
+
+            if (!Validator.isValidPlate(searchPlate)) {
+                MessageBox.showError("Invalid license plate format, use AAA 123B.");
                 return;
             }
 

@@ -2,6 +2,7 @@ package controller;
 
 import model.*;
 import util.Logger;
+import util.Validator;
 import view.MessageBox;
 
 import java.util.Optional;
@@ -19,8 +20,14 @@ public class ParkingController {
     }
 
     public void parkCar(String plate) {
+        // Validate license plate input and provide actionable error messages
         if (plate.isBlank()) {
-            MessageBox.showError("License plate is required.");
+            MessageBox.showError("Enter a valid license plate (e.g., AAA 123B).");
+            return;
+        }
+
+        if (!Validator.isValidPlate(plate)) {
+            MessageBox.showError("Invalid license plate format, use AAA 123B.");
             return;
         }
 
@@ -28,7 +35,7 @@ public class ParkingController {
         Optional<ParkingSlot> existingCar = findCarByPlate(plate);
         if (existingCar.isPresent()) {
             MessageBox.showError("Car with license plate " + plate + " is already parked in slot " +
-                    existingCar.get().getNumber());
+                    existingCar.get().getNumber() + ". Search to locate it.");
             return;
         }
 
