@@ -54,6 +54,8 @@ public class ParkingView extends JFrame {
     private JPanel slotPanel;
     private ParkingLot lot;
     private volatile boolean isDialogOpen = false; // Prevents multiple unpark dialogs
+    private Timer statusBarTimer; // Timer to clear status bar after 5 seconds
+    private JLabel statusBar; // Reference to status bar for updates
 
     // Colors for slot displays, used consistently for empty and occupied slots
     private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green for empty slots
@@ -82,6 +84,9 @@ public class ParkingView extends JFrame {
 
         this.lot = new ParkingLot(10);
         this.controller = new ParkingController(lot);
+        // Initialize status bar timer with a dummy listener (overridden per action)
+        this.statusBarTimer = new Timer(5000, e -> {
+        });
 
         initUI();
         setVisible(true);
@@ -122,6 +127,7 @@ public class ParkingView extends JFrame {
             g2.fillOval(14 * scale, 10 * scale, 4 * scale, 4 * scale);
             g2.fillRect(8 * scale, 2 * scale, 8 * scale, 4 * scale);
             g2.dispose();
+            // Return fallback as ImageIcon
             return new ImageIcon(fallback);
         }
     }
@@ -148,6 +154,7 @@ public class ParkingView extends JFrame {
             g2.drawOval(4 * scale, 4 * scale, 8 * scale, 8 * scale);
             g2.drawLine(10 * scale, 10 * scale, 12 * scale, 12 * scale);
             g2.dispose();
+            // Return fallback as ImageIcon
             return new ImageIcon(fallback);
         }
     }
@@ -173,6 +180,7 @@ public class ParkingView extends JFrame {
             g2.setFont(new Font("SansSerif", Font.BOLD, 12 * scale));
             g2.drawString("?", 6 * scale, 12 * scale);
             g2.dispose();
+            // Return fallback as ImageIcon
             return new ImageIcon(fallback);
         }
     }
@@ -200,8 +208,19 @@ public class ParkingView extends JFrame {
             g2.drawLine(4 * scale, 8 * scale, 7 * scale, 11 * scale);
             g2.drawLine(7 * scale, 11 * scale, 12 * scale, 5 * scale);
             g2.dispose();
+            // Return fallback as ImageIcon
             return new ImageIcon(fallback);
         }
+    }
+
+    // Clears the status bar to "Ready" after 5 seconds
+    private void clearStatusBar() {
+        if (statusBarTimer.isRunning()) {
+            statusBarTimer.stop();
+        }
+        statusBarTimer = new Timer(5000, e -> statusBar.setText("Ready"));
+        statusBarTimer.setRepeats(false);
+        statusBarTimer.start();
     }
 
     private void initUI() {
@@ -293,7 +312,8 @@ public class ParkingView extends JFrame {
                             +
                             "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter). Placeholder text guides you.</p>"
                             +
-                            "<p><b>Status Bar:</b> Shows parking and search status at the bottom.</p>" +
+                            "<p><b>Status Bar:</b> Shows parking and search status at the bottom, clears after 5 seconds.</p>"
+                            +
                             "</html>",
                     "Help Guide",
                     JOptionPane.INFORMATION_MESSAGE);
@@ -367,9 +387,9 @@ public class ParkingView extends JFrame {
         add(new JScrollPane(slotPanel), BorderLayout.CENTER);
 
         // Status bar with tooltip
-        JLabel statusBar = new JLabel("Ready", SwingConstants.CENTER);
+        statusBar = new JLabel("Ready", SwingConstants.CENTER);
         statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        statusBar.setToolTipText("Shows parking and search status");
+        statusBar.setToolTipText("Shows parking and search status, clears after 5 seconds");
         add(statusBar, BorderLayout.SOUTH);
 
         parkBtn.addActionListener(e -> {
@@ -377,6 +397,7 @@ public class ParkingView extends JFrame {
             String plateText = plateInput.getText().equals("Enter AAA 123B") ? "" : plateInput.getText();
             controller.parkCar(plateText);
             updateSlots();
+            // Update status bar with result (set by ParkingController via MessageBox)
             plateInput.setText("Enter AAA 123B");
             plateInput.setForeground(PLACEHOLDER_COLOR);
         });
@@ -387,12 +408,16 @@ public class ParkingView extends JFrame {
             String searchPlate = searchInput.getText().equals("Enter AAA 123B") ? "" : searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
                 MessageBox.showError("Search failed for license plate: Enter a valid license plate (e.g., AAA 123B).");
+                statusBar.setText("Search failed: Enter a valid license plate");
+                clearStatusBar();
                 return;
             }
 
             if (!Validator.isValidPlate(searchPlate)) {
                 MessageBox.showError(
                         "Search failed for license plate " + searchPlate + ": Invalid format, use AAA 123B.");
+                statusBar.setText("Search failed: Invalid license plate format");
+                clearStatusBar();
                 return;
             }
 
@@ -411,10 +436,12 @@ public class ParkingView extends JFrame {
                 statusBar.setText("Found car with license plate " + searchPlate + " in slot " + foundSlot);
                 highlightSlot(foundSlot);
                 MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
+                clearStatusBar();
             } else {
                 statusBar.setText("Car with license plate " + searchPlate + " not found");
                 MessageBox
                         .showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
+                clearStatusBar();
             }
 
             searchInput.setText("Enter AAA 123B");
@@ -481,17 +508,39 @@ public class ParkingView extends JFrame {
 
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
+                // Log click event to confirm listener is triggered
+                System.out.println("Clicked slot " + slotNumber + ", occupied: " + slot.isOccupied()
+                        + ", isDialogOpen: " + isDialogOpen);
                 if (slot.isOccupied() && !isDialogOpen) {
-                    isDialogOpen = true;
-                    int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
-                            "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot "
-                                    + slotNumber + "?",
-                            "Confirm Removal", JOptionPane.YES_NO_OPTION);
-                    if (confirm == JOptionPane.YES_OPTION) {
-                        controller.unparkCar(slotNumber);
-                        updateSlots();
+                    try {
+                        isDialogOpen = true;
+                        // Store plate number before unparking
+                        String plateNumber = slot.getCar().getPlateNumber();
+                        System.out.println("Showing unpark dialog for slot " + slotNumber + ", plate: " + plateNumber);
+                        int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
+                                "Remove car with license plate " + plateNumber + " from Slot " + slotNumber + "?",
+                                "Confirm Removal", JOptionPane.YES_NO_OPTION);
+                        if (confirm == JOptionPane.YES_OPTION) {
+                            System.out.println("Unparking car from slot " + slotNumber);
+                            controller.unparkCar(slotNumber);
+                            statusBar.setText(
+                                    "Removed car with license plate " + plateNumber + " from slot " + slotNumber);
+                            clearStatusBar();
+                            updateSlots();
+                            // Ensure UI refresh
+                            slotPanel.revalidate();
+                            slotPanel.repaint();
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("Error during unpark: " + ex.getMessage());
+                        MessageBox.showError("Failed to unpark car from slot " + slotNumber + ": " + ex.getMessage());
+                    } finally {
+                        isDialogOpen = false;
+                        System.out.println("isDialogOpen reset to false");
                     }
-                    isDialogOpen = false;
+                } else {
+                    System.out.println(
+                            "Unpark skipped: slot occupied=" + slot.isOccupied() + ", isDialogOpen=" + isDialogOpen);
                 }
             });
 
