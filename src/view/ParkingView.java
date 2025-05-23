@@ -27,6 +27,7 @@ class RoundedBorder implements Border {
         this.thickness = thickness;
     }
 
+    // Paint the border with a rounded rectangle, implementing Border interface
     @Override
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
         Graphics2D g2 = (Graphics2D) g.create();
@@ -199,12 +200,28 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Park button with car icon for UI memorability
+        // Park button with car icon, uniform styling with rounded border and hover
+        // effect
         JButton parkBtn = new JButton("Park", createCarIcon(16, 16));
         parkBtn.setBorder(createRoundedBorder());
         parkBtn.setFocusPainted(false);
+        parkBtn.setContentAreaFilled(true);
+        parkBtn.setMargin(new Insets(5, 10, 5, 10));
         parkBtn.setIconTextGap(4);
         parkBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        parkBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                parkBtn.setBorder(createHoverBorder());
+                parkBtn.setBackground(parkBtn.getBackground().darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                parkBtn.setBorder(createRoundedBorder());
+                parkBtn.setBackground(UIManager.getColor("Button.background"));
+            }
+        });
 
         topPanel.add(new JLabel("License Plate:"));
         topPanel.add(plateInput);
@@ -235,12 +252,28 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Search button with magnifying glass icon for UI familiarity
+        // Search button with magnifying glass icon, uniform styling with rounded border
+        // and hover effect
         JButton searchBtn = new JButton("Search", createSearchIcon(16, 16));
         searchBtn.setBorder(createRoundedBorder());
         searchBtn.setFocusPainted(false);
+        searchBtn.setContentAreaFilled(true);
+        searchBtn.setMargin(new Insets(5, 10, 5, 10));
         searchBtn.setIconTextGap(4);
         searchBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        searchBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                searchBtn.setBorder(createHoverBorder());
+                searchBtn.setBackground(searchBtn.getBackground().darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                searchBtn.setBorder(createRoundedBorder());
+                searchBtn.setBackground(UIManager.getColor("Button.background"));
+            }
+        });
 
         searchPanel.add(new JLabel("Search License Plate:"));
         searchPanel.add(searchInput);
@@ -326,11 +359,13 @@ public class ParkingView extends JFrame {
                 btn.setBackground(EMPTY_SLOT_COLOR);
             }
 
+            // Uniform styling for slot buttons with rounded border and hover effect
             btn.setForeground(TEXT_COLOR);
             btn.setToolTipText("Slot " + slot.getNumber());
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
+            btn.setMargin(new Insets(5, 10, 5, 10));
 
             btn.addMouseListener(new MouseAdapter() {
                 @Override
