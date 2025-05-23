@@ -173,16 +173,52 @@ public class ParkingView extends JFrame {
         }
     }
 
+    private ImageIcon createHelpIcon(int width, int height) {
+        try {
+            // Load the help PNG from the resources folder
+            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/help.png"));
+
+            // Create a new BufferedImage for the resized image
+            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = resizedImage.createGraphics();
+
+            // Apply rendering hints for smooth scaling
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Scale the image to the desired dimensions
+            g2.drawImage(originalImage, 0, 0, width, height, null);
+            g2.dispose();
+
+            return new ImageIcon(resizedImage);
+        } catch (IOException e) {
+            System.err.println("Failed to load help PNG icon: " + e.getMessage());
+            // Create a fallback help icon (question mark)
+            BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = fallback.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.BLACK);
+            // Draw a simple question mark
+            int scale = Math.min(width / 16, height / 16); // Base size: 16x16
+            g2.setFont(new Font("SansSerif", Font.BOLD, 12 * scale));
+            g2.drawString("?", 6 * scale, 12 * scale);
+            g2.dispose();
+            return new ImageIcon(fallback);
+        }
+    }
+
     private void initUI() {
         JPanel topPanel = new JPanel(new FlowLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
-        // Input field for license plate with placeholder
+        // Input field for license plate with placeholder and tooltip
         plateInput = new JTextField(15);
         plateInput.setBorder(createRoundedBorder());
         plateInput.setPreferredSize(new Dimension(200, 30));
         plateInput.setText("Enter AAA 123B");
         plateInput.setForeground(PLACEHOLDER_COLOR);
+        plateInput.setToolTipText("Enter license plate in format AAA 123B");
         plateInput.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -201,7 +237,7 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Park button with car icon, uniform styling with rounded border and hover effect
+        // Park button with car icon, uniform styling, and tooltip
         JButton parkBtn = new JButton("Park", createCarIcon(16, 16));
         parkBtn.setBorder(createRoundedBorder());
         parkBtn.setFocusPainted(false);
@@ -209,6 +245,7 @@ public class ParkingView extends JFrame {
         parkBtn.setMargin(new Insets(5, 10, 5, 10));
         parkBtn.setIconTextGap(4);
         parkBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        parkBtn.setToolTipText("Park a car in an available slot");
         parkBtn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -223,17 +260,62 @@ public class ParkingView extends JFrame {
             }
         });
 
+        // Help button with question mark icon, uniform styling, and tooltip
+        JButton helpBtn = new JButton("Help", createHelpIcon(16, 16));
+        helpBtn.setBorder(createRoundedBorder());
+        helpBtn.setFocusPainted(false);
+        helpBtn.setContentAreaFilled(true);
+        helpBtn.setMargin(new Insets(5, 10, 5, 10));
+        helpBtn.setIconTextGap(4);
+        helpBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        helpBtn.setToolTipText("Open help guide for using the parking system");
+        helpBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                helpBtn.setBorder(createHoverBorder());
+                helpBtn.setBackground(helpBtn.getBackground().darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                helpBtn.setBorder(createRoundedBorder());
+                helpBtn.setBackground(UIManager.getColor("Button.background"));
+            }
+        });
+        helpBtn.addActionListener(e -> {
+            JOptionPane.showMessageDialog(ParkingView.this,
+                    "<html><h3>Car Parking System Help</h3>" +
+                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., AAA 123B) in the top input field and click 'Park' to assign the car to an available slot.</p>"
+                            +
+                            "<p><b>Searching for a Car:</b> Enter a license plate in the search field and click 'Search'. If found, the slot highlights blue for 2 seconds.</p>"
+                            +
+                            "<p><b>Slot Colors:</b><br>" +
+                            "- <font color='green'>Green</font>: Empty slot.<br>" +
+                            "- <font color='red'>Red</font>: Occupied slot (click to remove car).<br>" +
+                            "- <font color='blue'>Blue</font>: Highlighted slot (after search).</p>" +
+                            "<p><b>Removing a Car:</b> Click an occupied (red) slot and confirm to unpark the car.</p>"
+                            +
+                            "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter). Placeholder text guides you.</p>"
+                            +
+                            "<p><b>Status Bar:</b> Shows parking and search results at the bottom.</p>" +
+                            "</html>",
+                    "Help Guide",
+                    JOptionPane.INFORMATION_MESSAGE);
+        });
+
         topPanel.add(new JLabel("License Plate:"));
         topPanel.add(plateInput);
         topPanel.add(parkBtn);
+        topPanel.add(helpBtn);
 
         JPanel searchPanel = new JPanel(new FlowLayout());
-        // Search input field for license plate with placeholder
+        // Search input field for license plate with placeholder and tooltip
         JTextField searchInput = new JTextField(15);
         searchInput.setBorder(createRoundedBorder());
         searchInput.setPreferredSize(new Dimension(200, 30));
         searchInput.setText("Enter AAA 123B");
         searchInput.setForeground(PLACEHOLDER_COLOR);
+        searchInput.setToolTipText("Enter license plate to find a parked car");
         searchInput.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -252,7 +334,7 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Search button with magnifying glass icon, uniform styling with rounded border and hover effect
+        // Search button with magnifying glass icon, uniform styling, and tooltip
         JButton searchBtn = new JButton("Search", createSearchIcon(16, 16));
         searchBtn.setBorder(createRoundedBorder());
         searchBtn.setFocusPainted(false);
@@ -260,6 +342,7 @@ public class ParkingView extends JFrame {
         searchBtn.setMargin(new Insets(5, 10, 5, 10));
         searchBtn.setIconTextGap(4);
         searchBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        searchBtn.setToolTipText("Search for a car; found slot highlights blue for 2 seconds");
         searchBtn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -287,8 +370,10 @@ public class ParkingView extends JFrame {
         updateSlots();
         add(new JScrollPane(slotPanel), BorderLayout.CENTER);
 
+        // Status bar with tooltip
         JLabel statusBar = new JLabel("Ready", SwingConstants.CENTER);
         statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        statusBar.setToolTipText("Shows parking and search status");
         add(statusBar, BorderLayout.SOUTH);
 
         parkBtn.addActionListener(e -> {
@@ -310,7 +395,8 @@ public class ParkingView extends JFrame {
             }
 
             if (!Validator.isValidPlate(searchPlate)) {
-                MessageBox.showError("Search failed for license plate " + searchPlate + ": Invalid format, use AAA 123B.");
+                MessageBox.showError(
+                        "Search failed for license plate " + searchPlate + ": Invalid format, use AAA 123B.");
                 return;
             }
 
@@ -331,7 +417,8 @@ public class ParkingView extends JFrame {
                 MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
             } else {
                 statusBar.setText("Car with license plate " + searchPlate + " not found");
-                MessageBox.showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
+                MessageBox
+                        .showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
             }
 
             searchInput.setText("Enter AAA 123B");
@@ -343,7 +430,8 @@ public class ParkingView extends JFrame {
         slotPanel.removeAll();
         ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for slots
 
-        // Create slot buttons with consistent EMPTY_SLOT_COLOR and OCCUPIED_SLOT_COLOR
+        // Create slot buttons with consistent EMPTY_SLOT_COLOR, OCCUPIED_SLOT_COLOR,
+        // and tooltips
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
 
@@ -359,9 +447,11 @@ public class ParkingView extends JFrame {
                 btn.setBackground(EMPTY_SLOT_COLOR);
             }
 
-            // Uniform styling for slot buttons with rounded border and hover effect
+            // Uniform styling for slot buttons with rounded border, hover effect, and
+            // dynamic tooltip
             btn.setForeground(TEXT_COLOR);
-            btn.setToolTipText("Slot " + slot.getNumber());
+            btn.setToolTipText(
+                    "Slot " + slot.getNumber() + ": " + (slot.isOccupied() ? "Occupied, click to remove" : "Empty"));
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
@@ -387,7 +477,8 @@ public class ParkingView extends JFrame {
             btn.addActionListener(e -> {
                 if (slot.isOccupied()) {
                     int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
-                            "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot " + slotNumber + "?",
+                            "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot "
+                                    + slotNumber + "?",
                             "Confirm Removal", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         controller.unparkCar(slotNumber);
