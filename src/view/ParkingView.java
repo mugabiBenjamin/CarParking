@@ -143,7 +143,7 @@ public class ParkingView extends JFrame {
         parkBtn.setBorder(createRoundedBorder());
         parkBtn.setFocusPainted(false);
 
-        topPanel.add(new JLabel("Plate Number:"));
+        topPanel.add(new JLabel("License Plate:"));
         topPanel.add(plateInput);
         topPanel.add(parkBtn);
 
@@ -156,7 +156,7 @@ public class ParkingView extends JFrame {
         searchBtn.setBorder(createRoundedBorder());
         searchBtn.setFocusPainted(false);
 
-        searchPanel.add(new JLabel("Search Plate:"));
+        searchPanel.add(new JLabel("Search License Plate:"));
         searchPanel.add(searchInput);
         searchPanel.add(searchBtn);
 
@@ -182,7 +182,7 @@ public class ParkingView extends JFrame {
         searchBtn.addActionListener(e -> {
             String searchPlate = searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
-                MessageBox.showError("Please enter a plate number to search");
+                MessageBox.showError("Please enter a license plate to search");
                 return;
             }
 
@@ -198,12 +198,12 @@ public class ParkingView extends JFrame {
             }
 
             if (found) {
-                statusBar.setText(" Found car with plate " + searchPlate + " in slot " + foundSlot);
+                statusBar.setText("Found car with license plate " + searchPlate + " in slot " + foundSlot);
                 highlightSlot(foundSlot);
                 MessageBox.showInfo("Car found in slot " + foundSlot);
             } else {
-                statusBar.setText(" Car with plate " + searchPlate + " not found");
-                MessageBox.showInfo("No car with plate " + searchPlate + " is currently parked");
+                statusBar.setText("Car with license plate " + searchPlate + " not found");
+                MessageBox.showInfo("No car with license plate " + searchPlate + " is currently parked");
             }
 
             searchInput.setText("");
@@ -254,7 +254,8 @@ public class ParkingView extends JFrame {
             btn.addActionListener(e -> {
                 if (slot.isOccupied()) {
                     int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
-                            "Remove car " + slot.getCar().getPlateNumber() + " from Slot " + slotNumber + "?",
+                            "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot "
+                                    + slotNumber + "?",
                             "Confirm Removal", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         controller.unparkCar(slotNumber);
