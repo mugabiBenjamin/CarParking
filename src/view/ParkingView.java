@@ -55,8 +55,9 @@ public class ParkingView extends JFrame {
     private JPanel slotPanel;
     private ParkingLot lot;
 
-    private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green
-    private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light Red
+    // Colors for slot displays, used consistently for empty and occupied slots
+    private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green for empty slots
+    private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light Red for occupied slots
     private final Color TEXT_COLOR = Color.BLACK; // Black text
     private final Color PLACEHOLDER_COLOR = Color.GRAY; // Color for placeholder text
 
@@ -200,8 +201,7 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Park button with car icon, uniform styling with rounded border and hover
-        // effect
+        // Park button with car icon, uniform styling with rounded border and hover effect
         JButton parkBtn = new JButton("Park", createCarIcon(16, 16));
         parkBtn.setBorder(createRoundedBorder());
         parkBtn.setFocusPainted(false);
@@ -252,8 +252,7 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Search button with magnifying glass icon, uniform styling with rounded border
-        // and hover effect
+        // Search button with magnifying glass icon, uniform styling with rounded border and hover effect
         JButton searchBtn = new JButton("Search", createSearchIcon(16, 16));
         searchBtn.setBorder(createRoundedBorder());
         searchBtn.setFocusPainted(false);
@@ -311,8 +310,7 @@ public class ParkingView extends JFrame {
             }
 
             if (!Validator.isValidPlate(searchPlate)) {
-                MessageBox.showError(
-                        "Search failed for license plate " + searchPlate + ": Invalid format, use AAA 123B.");
+                MessageBox.showError("Search failed for license plate " + searchPlate + ": Invalid format, use AAA 123B.");
                 return;
             }
 
@@ -333,8 +331,7 @@ public class ParkingView extends JFrame {
                 MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
             } else {
                 statusBar.setText("Car with license plate " + searchPlate + " not found");
-                MessageBox
-                        .showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
+                MessageBox.showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
             }
 
             searchInput.setText("Enter AAA 123B");
@@ -346,6 +343,7 @@ public class ParkingView extends JFrame {
         slotPanel.removeAll();
         ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for slots
 
+        // Create slot buttons with consistent EMPTY_SLOT_COLOR and OCCUPIED_SLOT_COLOR
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
 
@@ -370,6 +368,7 @@ public class ParkingView extends JFrame {
             btn.setMargin(new Insets(5, 10, 5, 10));
 
             btn.addMouseListener(new MouseAdapter() {
+                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     Color baseColor = slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR;
@@ -388,8 +387,7 @@ public class ParkingView extends JFrame {
             btn.addActionListener(e -> {
                 if (slot.isOccupied()) {
                     int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
-                            "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot "
-                                    + slotNumber + "?",
+                            "Remove car with license plate " + slot.getCar().getPlateNumber() + " from Slot " + slotNumber + "?",
                             "Confirm Removal", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         controller.unparkCar(slotNumber);
@@ -405,14 +403,18 @@ public class ParkingView extends JFrame {
     }
 
     private void highlightSlot(int slotNumber) {
-        updateSlots();
         if (slotNumber > 0 && slotNumber <= lot.getSlots().size()) {
             Component comp = slotPanel.getComponent(slotNumber - 1);
             if (comp instanceof JButton) {
                 JButton btn = (JButton) comp;
+                ParkingSlot slot = lot.getSlots().get(slotNumber - 1);
+                // Temporarily highlight slot in blue, then restore consistent slot color
                 btn.setBackground(Color.BLUE);
                 btn.setForeground(Color.WHITE);
-                Timer timer = new Timer(2000, e -> updateSlots());
+                Timer timer = new Timer(2000, e -> {
+                    btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
+                    btn.setForeground(TEXT_COLOR);
+                });
                 timer.setRepeats(false);
                 timer.start();
             }
