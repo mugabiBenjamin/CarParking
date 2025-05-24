@@ -141,12 +141,11 @@ CarParking/
 │  │  └─ ParkingSlot.java                 # Represents an individual parking slot
 │  ├─ resources/
 │  │  └─ icons/
-│  │     └─ car.png                       # Car icon for parking slots
 │  ├─ util/
 │  │  ├─ Logger.java                      # Logs parking, unparking, and search actions
+│  │  ├─ MessageBox.java                  # Utility for displaying dialog messages
 │  │  └─ Validator.java                   # Validates license plate formats and inputs
 │  ├─ view/
-│  │  ├─ MessageBox.java                  # Utility for displaying dialog messages
 │  │  ├─ ParkingSlotPanel.java            # GUI component for displaying a parking slot
 │  │  └─ ParkingView.java                 # Main GUI window and layout
 │  └─ Main.java                           # Application entry point
