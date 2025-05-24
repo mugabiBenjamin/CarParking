@@ -197,7 +197,7 @@ public class ParkingView extends JFrame {
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.GREEN); // Green for valid input
+            g2.setColor(Color.GREEN);
             int scale = Math.min(width / 16, height / 16);
             g2.setStroke(new BasicStroke(2 * scale));
             g2.drawLine(4 * scale, 8 * scale, 7 * scale, 11 * scale);
@@ -223,7 +223,7 @@ public class ParkingView extends JFrame {
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.RED); // Red for invalid input
+            g2.setColor(Color.RED);
             int scale = Math.min(width / 16, height / 16);
             g2.setStroke(new BasicStroke(2 * scale));
             g2.drawLine(4 * scale, 4 * scale, 12 * scale, 12 * scale);
@@ -250,13 +250,13 @@ public class ParkingView extends JFrame {
         plateInput = new JTextField(15);
         plateInput.setBorder(createRoundedBorder());
         plateInput.setPreferredSize(new Dimension(200, 30));
-        plateInput.setText("Enter AAA 123B");
+        plateInput.setText("Enter UAA 123B");
         plateInput.setForeground(PLACEHOLDER_COLOR);
-        plateInput.setToolTipText("Enter license plate in format AAA 123B");
+        plateInput.setToolTipText("Enter license plate (e.g., UAA 123B, UG 123B, or personalized)");
         plateInput.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (plateInput.getText().equals("Enter AAA 123B")) {
+                if (plateInput.getText().equals("Enter UAA 123B")) {
                     plateInput.setText("");
                     plateInput.setForeground(Color.BLACK);
                 }
@@ -265,7 +265,7 @@ public class ParkingView extends JFrame {
             @Override
             public void focusLost(FocusEvent e) {
                 if (plateInput.getText().isEmpty()) {
-                    plateInput.setText("Enter AAA 123B");
+                    plateInput.setText("Enter UAA 123B");
                     plateInput.setForeground(PLACEHOLDER_COLOR);
                 }
             }
@@ -281,7 +281,7 @@ public class ParkingView extends JFrame {
             @Override
             public void keyReleased(KeyEvent e) {
                 String text = plateInput.getText().trim();
-                if (text.equals("Enter AAA 123B") || text.isEmpty()) {
+                if (text.equals("Enter UAA 123B") || text.isEmpty()) {
                     validationIcon.setIcon(null);
                     validationIcon.setToolTipText("License plate validation status");
                 } else if (Validator.isValidPlate(text)) {
@@ -289,7 +289,7 @@ public class ParkingView extends JFrame {
                     validationIcon.setToolTipText("Valid license plate format");
                 } else {
                     validationIcon.setIcon(createXIcon(16, 16));
-                    validationIcon.setToolTipText("Invalid license plate format (use AAA 123B)");
+                    validationIcon.setToolTipText("Invalid license plate format (must start with U; use UG 123B for government, UAA 123B for normal, or personalized)");
                 }
             }
         });
@@ -343,7 +343,7 @@ public class ParkingView extends JFrame {
             JLabel helpLabel = new JLabel(
                     "<html><div style='width: 500px;'>" +
                             "<h3>Car Parking System Help</h3>" +
-                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., AAA 123B) in the top input field.<br>"
+                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., UAA 123B, UG 123B, or personalized like UXYZ) in the top input field.<br>"
                             +
                             "A green checkmark indicates a valid format, a red X indicates an invalid format.<br>" +
                             "Click 'Park' to assign the car to an available slot.<br></p>" +
@@ -361,7 +361,13 @@ public class ParkingView extends JFrame {
                             "The dialog shows the car's details (license plate, slot number).<br>" +
                             "Confirm to unpark the car.<br>" +
                             "This action is irreversible.<br></p>" +
-                            "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter).<br>" +
+                            "<p><b>Input Format:</b> All plates must start with 'U'. Three formats are allowed:<br>" +
+                            "- <b>Normal:</b> UAA 123B (U, any two letters, space, three digits, letter, e.g., UYZ 123B).<br>"
+                            +
+                            "- <b>Government:</b> UG 123B (must start with UG, space, three digits, letter, e.g., UG 456C).<br>"
+                            +
+                            "- <b>Personalized:</b> Starts with U, 2-7 total characters, letters/digits/spaces (e.g., UXYZ, U123, UABC DEF).<br>"
+                            +
                             "Placeholder text and real-time validation guide you.<br></p>" +
                             "<p><b>Error Handling:</b> Error messages include specific recovery steps.<br>" +
                             "Examples include correcting input format or checking slot status.<br>" +
@@ -387,13 +393,13 @@ public class ParkingView extends JFrame {
         JTextField searchInput = new JTextField(15);
         searchInput.setBorder(createRoundedBorder());
         searchInput.setPreferredSize(new Dimension(200, 30));
-        searchInput.setText("Enter AAA 123B");
+        searchInput.setText("Enter UAA 123B");
         searchInput.setForeground(PLACEHOLDER_COLOR);
-        searchInput.setToolTipText("Enter license plate to find a parked car");
+        searchInput.setToolTipText("Enter license plate (e.g., UAA 123B, UG 123B, or personalized)");
         searchInput.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (searchInput.getText().equals("Enter AAA 123B")) {
+                if (searchInput.getText().equals("Enter UAA 123B")) {
                     searchInput.setText("");
                     searchInput.setForeground(Color.BLACK);
                 }
@@ -402,7 +408,7 @@ public class ParkingView extends JFrame {
             @Override
             public void focusLost(FocusEvent e) {
                 if (searchInput.getText().isEmpty()) {
-                    searchInput.setText("Enter AAA 123B");
+                    searchInput.setText("Enter UAA 123B");
                     searchInput.setForeground(PLACEHOLDER_COLOR);
                 }
             }
@@ -418,15 +424,15 @@ public class ParkingView extends JFrame {
             @Override
             public void keyReleased(KeyEvent e) {
                 String text = searchInput.getText().trim();
-                if (text.equals("Enter AAA 123B") || text.isEmpty()) {
+                if (text.equals("Enter UAA 123B") || text.isEmpty()) {
                     searchValidationIcon.setIcon(null);
                     searchValidationIcon.setToolTipText("Search license plate validation status");
                 } else if (Validator.isValidPlate(text)) {
                     searchValidationIcon.setIcon(createCheckIcon(16, 16));
-                    validationIcon.setToolTipText("Valid license plate format");
+                    searchValidationIcon.setToolTipText("Valid license plate format");
                 } else {
                     searchValidationIcon.setIcon(createXIcon(16, 16));
-                    searchValidationIcon.setToolTipText("Invalid license plate format (use AAA 123B)");
+                    validationIcon.setToolTipText("Invalid license plate format (must start with U; use UG 123B for government, UAA 123B for normal, or personalized)");
                 }
             }
         });
@@ -474,37 +480,37 @@ public class ParkingView extends JFrame {
         add(statusBar, BorderLayout.SOUTH);
 
         parkBtn.addActionListener(e -> {
-            String plateText = plateInput.getText().equals("Enter AAA 123B") ? "" : plateInput.getText();
+            String plateText = plateInput.getText().equals("Enter UAA 123B") ? "" : plateInput.getText();
             if (plateText.isEmpty()) {
                 MessageBox.showError("Parking failed: No license plate entered.",
-                        "Enter a valid license plate (e.g., AAA 123B) in the input field.",
-                        "Ensure the format is three letters, a space, three digits, and a letter.");
+                        "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like UXYZ) in the input field.",
+                        "Ensure the plate starts with U and follows one of the allowed formats.");
                 statusBar.setText("Parking failed: Enter a valid license plate");
                 clearStatusBar();
                 return;
             }
             if (!Validator.isValidPlate(plateText)) {
                 MessageBox.showError("Parking failed for license plate " + plateText + ": Invalid format.",
-                        "Correct the license plate to match the format AAA 123B.",
-                        "Use three uppercase letters, a space, three digits, and one letter.");
+                        "Correct the license plate to start with U and match one of: UAA 123B (normal, any two letters after U), UG 123B (government, must start with UG), or 2-7 characters (personalized).",
+                        "Examples: UYZ 123B, UG 456C, UXYZ. Ensure the format is correct.");
                 statusBar.setText("Parking failed: Invalid license plate format");
                 clearStatusBar();
                 return;
             }
             controller.parkCar(plateText);
             updateSlots();
-            plateInput.setText("Enter AAA 123B");
+            plateInput.setText("Enter UAA 123B");
             plateInput.setForeground(PLACEHOLDER_COLOR);
             validationIcon.setIcon(null);
             validationIcon.setToolTipText("License plate validation status");
         });
 
         searchBtn.addActionListener(e -> {
-            String searchPlate = searchInput.getText().equals("Enter AAA 123B") ? "" : searchInput.getText().trim();
+            String searchPlate = searchInput.getText().equals("Enter UAA 123B") ? "" : searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
                 MessageBox.showError("Search failed: No license plate entered.",
-                        "Enter a valid license plate (e.g., AAA 123B) in the search field.",
-                        "Ensure the format is three letters, a space, three digits, and a letter.");
+                        "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like UXYZ) in the search field.",
+                        "Ensure the plate starts with U and follows one of the allowed formats.");
                 statusBar.setText("Search failed: Enter a valid license plate");
                 clearStatusBar();
                 return;
@@ -512,8 +518,8 @@ public class ParkingView extends JFrame {
 
             if (!Validator.isValidPlate(searchPlate)) {
                 MessageBox.showError("Search failed for license plate " + searchPlate + ": Invalid format.",
-                        "Correct the license plate to match the format AAA 123B.",
-                        "Use three uppercase letters, a space, three digits, and one letter.");
+                        "Correct the license plate to start with U and match one of: UAA 123B (normal, any two letters after U), UG 123B (government, must start with UG), or 2-7 characters (personalized).",
+                        "Examples: UYZ 123B, UG 456C, UXYZ. Ensure the format is correct.");
                 statusBar.setText("Search failed: Invalid license plate format");
                 clearStatusBar();
                 return;
@@ -532,7 +538,6 @@ public class ParkingView extends JFrame {
 
             if (found) {
                 statusBar.setText("Found car with license plate " + searchPlate + " in slot " + foundSlot);
-
                 highlightSlot(foundSlot);
                 MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
                 clearStatusBar();
@@ -543,7 +548,7 @@ public class ParkingView extends JFrame {
                 clearStatusBar();
             }
 
-            searchInput.setText("Enter AAA 123B");
+            searchInput.setText("Enter UAA 123B");
             searchInput.setForeground(PLACEHOLDER_COLOR);
             searchValidationIcon.setIcon(null);
             searchValidationIcon.setToolTipText("Search license plate validation status");
