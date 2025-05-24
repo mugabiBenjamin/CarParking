@@ -98,6 +98,7 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
    CarParking/src/resources/icons/
    ├─ car.png
    ├─ check.png
+   ├─ check-green.png
    ├─ x.png
    ├─ search.png
    └─ help.png
