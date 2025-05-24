@@ -60,7 +60,8 @@ public class ParkingView extends JFrame {
 
     // Colors for slot displays, used consistently for empty and occupied slots
     // Light colors from Enhanced Unpark Confirmation
-    // Black text for occupied slots (~3.8:1 contrast, fails WCAG 4.5:1 but passes 3:1 for large text)
+    // Black text for occupied slots (~3.8:1 contrast, fails WCAG 4.5:1 but passes
+    // 3:1 for large text)
     // White text for empty slots (~4.7:1 contrast, passes WCAG 4.5:1)
     private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light green
     private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light red
@@ -89,7 +90,8 @@ public class ParkingView extends JFrame {
         this.lot = new ParkingLot(10);
         this.controller = new ParkingController(lot);
         // Initialize status bar timer with a dummy listener (overridden per action)
-        this.statusBarTimer = new Timer(5000, e -> {});
+        this.statusBarTimer = new Timer(5000, e -> {
+        });
 
         initUI();
         setVisible(true);
@@ -297,22 +299,43 @@ public class ParkingView extends JFrame {
             }
         });
         helpBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(ParkingView.this,
-                    "<html><h3>Car Parking System Help</h3>" +
-                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., AAA 123B) in the top input field and click 'Park' to assign the car to an available slot.</p>" +
-                            "<p><b>Searching for a Car:</b> Enter a license plate in the search field and click 'Search'. If found, the slot highlights blue for 2 seconds.</p>" +
+            // Fixed-width help dialog (500px) with line breaks after each sentence
+            // Uses HTML <div> for width control and <br> for readability; black text (~21:1
+            // contrast on white)
+            JLabel helpLabel = new JLabel(
+                    "<html><div style='width: 500px;'>" +
+                            "<h3>Car Parking System Help</h3>" +
+                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., AAA 123B) in the top input field.<br>"
+                            +
+                            "Click 'Park' to assign the car to an available slot.<br></p>" +
+                            "<p><b>Searching for a Car:</b> Enter a license plate in the search field.<br>" +
+                            "Click 'Search'.<br>" +
+                            "If found, the slot highlights blue for 2 seconds.<br></p>" +
                             "<p><b>Slot Status:</b><br>" +
-                            "- <font color='green'>Green</font>: Empty slot (checkmark icon, white text, not clickable).<br>" +
-                            "- <font color='red'>Red</font>: Occupied slot (car icon, black text, click to remove).<br>" +
-                            "- <font color='blue'>Blue</font>: Highlighted slot (after search).</p>" +
-                            "<p><b>Removing a Car:</b> Click an occupied (red) slot to open a confirmation dialog showing the car's details (license plate, slot number). Confirm to unpark the car. This action is irreversible.</p>" +
-                            "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter). Placeholder text guides you.</p>" +
-                            "<p><b>Error Handling:</b> Error messages include specific recovery steps (e.g., correct input format, check slot status) to guide you through issues.</p>" +
-                            "<p><b>Status Bar:</b> Shows parking and search status at the bottom, clears after 5 seconds.</p>" +
-                            "<p><b>Accessibility:</b> Light red for occupied slots (black text), light green for empty slots (white text), and high-contrast input fields/status bar ensure readability. Note: Black text on occupied slots has lower contrast but may be readable for large text.</p>" +
-                            "</html>",
-                    "Help Guide",
-                    JOptionPane.INFORMATION_MESSAGE);
+                            "- <font color='green'>Green</font>: Empty slot (checkmark icon, white text, not clickable).<br>"
+                            +
+                            "- <font color='red'>Red</font>: Occupied slot (car icon, black text, click to remove).<br>"
+                            +
+                            "- <font color='blue'>Blue</font>: Highlighted slot (after search).<br></p>" +
+                            "<p><b>Removing a Car:</b> Click an occupied (red) slot to open a confirmation dialog.<br>"
+                            +
+                            "The dialog shows the car's details (license plate, slot number).<br>" +
+                            "Confirm to unpark the car.<br>" +
+                            "This action is irreversible.<br></p>" +
+                            "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter).<br>" +
+                            "Placeholder text guides you.<br></p>" +
+                            "<p><b>Error Handling:</b> Error messages include specific recovery steps.<br>" +
+                            "Examples include correcting input format or checking slot status.<br>" +
+                            "These steps guide you through issues.<br></p>" +
+                            "<p><b>Status Bar:</b> Shows parking and search status at the bottom.<br>" +
+                            "It clears after 5 seconds.<br></p>" +
+                            "<p><b>Accessibility:</b> Light red for occupied slots (black text).<br>" +
+                            "Light green for empty slots (white text).<br>" +
+                            "High-contrast input fields/status bar ensure readability.<br>" +
+                            "Note: Black text on occupied slots has lower contrast but may be readable for large text.<br></p>"
+                            +
+                            "</div></html>");
+            JOptionPane.showMessageDialog(ParkingView.this, helpLabel, "Help Guide", JOptionPane.INFORMATION_MESSAGE);
         });
 
         topPanel.add(new JLabel("License Plate:"));
@@ -432,7 +455,7 @@ public class ParkingView extends JFrame {
             if (!Validator.isValidPlate(searchPlate)) {
                 MessageBox.showError("Search failed for license plate " + searchPlate + ": Invalid format.",
                         "Correct the license plate to match the format AAA 123B.",
-                        "Use three uppercase letters, a space, three digits, and one letter.");
+                        "Use three uppercase letters, a space, three digits, and a letter.");
                 statusBar.setText("Search failed: Invalid license plate format");
                 clearStatusBar();
                 return;
@@ -455,7 +478,8 @@ public class ParkingView extends JFrame {
                 MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
                 clearStatusBar();
             } else {
-                MessageBox.showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
+                MessageBox
+                        .showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
                 statusBar.setText("Car with license plate " + searchPlate + " not found");
                 clearStatusBar();
             }
@@ -470,7 +494,8 @@ public class ParkingView extends JFrame {
         ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for occupied slots
         ImageIcon checkIcon = createCheckIcon(32, 32); // Resize to 32x32 pixels for empty slots
 
-        // Create slot buttons with consistent car (occupied) and checkmark (empty) icons
+        // Create slot buttons with consistent car (occupied) and checkmark (empty)
+        // icons
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
 
@@ -492,7 +517,8 @@ public class ParkingView extends JFrame {
                 btn.setEnabled(false); // Disable empty slots to prevent interaction
             }
 
-            // Uniform styling for slot buttons with rounded border, hover effect, and dynamic tooltip
+            // Uniform styling for slot buttons with rounded border, hover effect, and
+            // dynamic tooltip
             btn.setToolTipText("Slot " + slot.getNumber() + ": " +
                     (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (checkmark, not clickable)"));
             btn.setBorder(createRoundedBorder());
@@ -501,7 +527,8 @@ public class ParkingView extends JFrame {
             btn.setMargin(new Insets(5, 10, 5, 10));
 
             btn.addMouseListener(new MouseAdapter() {
-                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR for enabled buttons
+                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR for enabled
+                // buttons
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     if (btn.isEnabled()) {
@@ -523,7 +550,8 @@ public class ParkingView extends JFrame {
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
                 // Log click event to confirm listener is triggered
-                System.out.println("Clicked slot " + slotNumber + ", occupied: " + slot.isOccupied() + ", isDialogOpen: " + isDialogOpen);
+                System.out.println("Clicked slot " + slotNumber + ", occupied: " + slot.isOccupied()
+                        + ", isDialogOpen: " + isDialogOpen);
                 if (slot.isOccupied() && !isDialogOpen) {
                     try {
                         isDialogOpen = true;
@@ -539,14 +567,16 @@ public class ParkingView extends JFrame {
                                         "<li><b>Slot Number:</b> " + slotNumber + "</li>" +
                                         "<li><b>Additional Details:</b> No additional details available</li>" +
                                         "</ul>" +
-                                        "<p><font color='red'><b>Warning:</b> This action is irreversible. The car will be removed from the parking system.</font></p>" +
+                                        "<p><font color='red'><b>Warning:</b> This action is irreversible. The car will be removed from the parking system.</font></p>"
+                                        +
                                         "<p>Do you want to proceed?</p>" +
                                         "</html>",
                                 "Unpark Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                         if (confirm == JOptionPane.YES_OPTION) {
                             System.out.println("Unparking car from slot " + slotNumber);
                             controller.unparkCar(slotNumber);
-                            statusBar.setText("Removed car with license plate " + plateNumber + " from slot " + slotNumber);
+                            statusBar.setText(
+                                    "Removed car with license plate " + plateNumber + " from slot " + slotNumber);
                             clearStatusBar();
                             updateSlots();
                             // Ensure UI refresh
@@ -565,7 +595,8 @@ public class ParkingView extends JFrame {
                         System.out.println("isDialogOpen reset to false");
                     }
                 } else {
-                    System.out.println("Unpark skipped: slot occupied=" + slot.isOccupied() + ", isDialogOpen=" + isDialogOpen);
+                    System.out.println(
+                            "Unpark skipped: slot occupied=" + slot.isOccupied() + ", isDialogOpen=" + isDialogOpen);
                 }
             });
 
@@ -586,7 +617,8 @@ public class ParkingView extends JFrame {
                 btn.setForeground(Color.WHITE);
                 Timer timer = new Timer(2000, e -> {
                     btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
-                    btn.setForeground(slot.isOccupied() ? Color.BLACK : TEXT_COLOR); // Black for occupied, white for empty
+                    btn.setForeground(slot.isOccupied() ? Color.BLACK : TEXT_COLOR); // Black for occupied, white for
+                                                                                     // empty
                 });
                 timer.setRepeats(false);
                 timer.start();
