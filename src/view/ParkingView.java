@@ -183,7 +183,7 @@ public class ParkingView extends JFrame {
 
     private ImageIcon createCheckIcon(int width, int height) {
         try {
-            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/check-green.png"));
+            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/check.png"));
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = resizedImage.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -193,7 +193,7 @@ public class ParkingView extends JFrame {
             g2.dispose();
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
-            System.err.println("Failed to load green checkmark PNG icon: " + e.getMessage());
+            System.err.println("Failed to load check PNG icon: " + e.getMessage());
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -351,7 +351,7 @@ public class ParkingView extends JFrame {
                             "Click 'Search'.<br>" +
                             "If found, the slot highlights blue for 2 seconds.<br></p>" +
                             "<p><b>Slot Status:</b><br>" +
-                            "- <font color='green'>Green</font>: Empty slot (green checkmark icon, white text, not clickable).<br>"
+                            "- <font color='green'>Green</font>: Empty slot (check icon, white text, not clickable).<br>"
                             +
                             "- <font color='red'>Red</font>: Occupied slot (car icon, black text, click to remove).<br>"
                             +
@@ -582,7 +582,7 @@ public class ParkingView extends JFrame {
             }
 
             btn.setToolTipText("Slot " + slot.getNumber() + ": " +
-                    (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (green checkmark, not clickable)"));
+                    (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (check icon, not clickable)"));
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
