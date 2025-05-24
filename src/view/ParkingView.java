@@ -600,11 +600,11 @@ public class ParkingView extends JFrame {
                             +
                             "<p><b>Searching:</b> Enter a plate in the search field, use 'Search' or Enter. Valid plates highlight slot in blue for 2s. Input preserved if invalid or not found.</p>"
                             +
-                            "<p><b>Removing a Car:</b> Click an occupied (red) slot, confirm to unpark (irreversible).</p>"
+                            "<p><b>Removing a Car:</b> Click an occupied (light red) slot, confirm to unpark (irreversible).</p>"
                             +
                             "<p><b>Slot Status:</b><ul style='margin: 5px 0; padding-left: 20px;'>" +
-                            "<li><font color='green'>Green</font>: Empty (check icon, not clickable).</li>" +
-                            "<li><font color='red'>Red</font>: Occupied (car icon, clickable).</li>" +
+                            "<li><font color='#90EE90'>Light green</font>: Empty (check icon, not clickable).</li>" +
+                            "<li><font color='#FFB6C1'>Light red</font>: Occupied (car icon, clickable).</li>" +
                             "<li><font color='blue'>Blue</font>: Found (after search).</li></ul></p>" +
                             "<p><b>Plate Formats:</b><ul style='margin: 5px 0; padding-left: 20px;'>" +
                             "<li><b>Normal</b>: UAA 123B (U, 2 letters, space, 3 digits, letter).</li>" +
@@ -773,7 +773,8 @@ public class ParkingView extends JFrame {
             }
 
             btn.setToolTipText("Slot " + slot.getNumber() + ": " +
-                    (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (check icon, not clickable)"));
+                    (slot.isOccupied() ? "Occupied (light red), click to remove (car icon)"
+                            : "Empty (light green), not clickable (check icon)"));
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
