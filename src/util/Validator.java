@@ -26,9 +26,9 @@ public class Validator {
             return true;
         }
 
-        // 3. Personalized plate: Starts with U, 2-7 total characters,
+        // 3. Personalized plate: Starts with U, 2-8 total characters,
         // letters/digits/spaces after U
-        if (normalizedPlate.length() >= 2 && normalizedPlate.length() <= 7) {
+        if (normalizedPlate.length() >= 2 && normalizedPlate.length() <= 8) {
             String afterU = normalizedPlate.substring(1);
             if (afterU.matches("[A-Z0-9\\s]*")) {
                 return true;
