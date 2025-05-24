@@ -5,34 +5,21 @@ public class Validator {
         if (plate == null || plate.trim().isEmpty()) {
             return false;
         }
+        plate = plate.trim().toUpperCase();
 
-        // Normalize input: trim and convert to uppercase for case-insensitive
-        // validation
-        String normalizedPlate = plate.trim().toUpperCase();
-
-        // Check if plate starts with 'U'
-        if (!normalizedPlate.startsWith("U")) {
-            return false;
-        }
-
-        // 1. Normal plate: UAA 123B (U, two letters, space, three digits, one letter)
-        if (normalizedPlate.matches("^U[A-Z]{2}\\s[0-9]{3}[A-Z]$")) {
+        // Normal plate: UAA 123B (U, two letters, space, three digits, letter)
+        if (plate.matches("U[A-Z]{2}\\s\\d{3}[A-Z]")) {
             return true;
         }
 
-        // 2. Government plate: UG 123B (must start with UG, space, three digits, one
-        // letter)
-        if (normalizedPlate.matches("^UG\\s[0-9]{3}[A-Z]$")) {
+        // Government plate: UG 123B (UG, space, three digits, letter)
+        if (plate.matches("UG\\s\\d{3}[A-Z]")) {
             return true;
         }
 
-        // 3. Personalized plate: Starts with U, 2-8 total characters,
-        // letters/digits/spaces after U
-        if (normalizedPlate.length() >= 2 && normalizedPlate.length() <= 8) {
-            String afterU = normalizedPlate.substring(1);
-            if (afterU.matches("[A-Z0-9\\s]*")) {
-                return true;
-            }
+        // Personalized plate: Starts with any letter, 2-8 chars, letters/numbers/spaces
+        if (plate.matches("[A-Z][A-Z0-9\\s]{1,7}")) {
+            return plate.length() >= 2 && plate.length() <= 8;
         }
 
         return false;
