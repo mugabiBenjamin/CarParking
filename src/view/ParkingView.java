@@ -9,6 +9,7 @@ import util.MessageBox;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -69,7 +70,7 @@ public class ParkingView extends JFrame {
 
     public ParkingView() {
         setTitle("Car Parking System");
-        setSize(600, 500);
+        setSize(600, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -271,8 +272,14 @@ public class ParkingView extends JFrame {
     }
 
     private void initUI() {
-        JPanel topPanel = new JPanel(new FlowLayout());
-        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        // Parking Section
+        JPanel parkPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        parkPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Park a Car",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("SansSerif", Font.BOLD, 12)));
 
         // Input field for license plate with placeholder and tooltip
         plateInput = new JTextField(15);
@@ -394,68 +401,20 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Help button with question mark icon, uniform styling, and tooltip
-        JButton helpBtn = new JButton("Help", createHelpIcon(16, 16));
-        helpBtn.setBorder(createRoundedBorder());
-        helpBtn.setFocusPainted(false);
-        helpBtn.setContentAreaFilled(true);
-        helpBtn.setMargin(new Insets(5, 10, 5, 10));
-        helpBtn.setIconTextGap(4);
-        helpBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
-        helpBtn.setToolTipText("Open help guide for using the parking system");
-        helpBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                helpBtn.setBorder(createHoverBorder());
-                helpBtn.setBackground(helpBtn.getBackground().darker());
-            }
+        parkPanel.add(new JLabel("License Plate:"));
+        parkPanel.add(plateInput);
+        parkPanel.add(validationIcon);
+        parkPanel.add(parkBtn);
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-                helpBtn.setBorder(createRoundedBorder());
-                helpBtn.setBackground(UIManager.getColor("Button.background"));
-            }
-        });
-        helpBtn.addActionListener(e -> {
-            JLabel helpLabel = new JLabel(
-                    "<html><div style='width: 450px; font-size: 11px; margin: 5px; line-height: 1.2;'>" +
-                            "<h3 style='margin: 5px 0;'>Car Parking System Help</h3>" +
-                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., UAA 123B, UG 123B, ABC123) in the top field. "
-                            +
-                            "Use 'Park' or Enter. Green check for valid, red X with tooltip for invalid. Input preserved on errors.</p>"
-                            +
-                            "<p><b>Searching:</b> Enter a plate in the search field, use 'Search' or Enter. Valid plates highlight slot in blue for 2s. Input preserved if invalid or not found.</p>"
-                            +
-                            "<p><b>Removing a Car:</b> Click an occupied (red) slot, confirm to unpark (irreversible).</p>"
-                            +
-                            "<p><b>Slot Status:</b><ul style='margin: 5px 0; padding-left: 20px;'>" +
-                            "<li><font color='green'>Green</font>: Empty (check icon, not clickable).</li>" +
-                            "<li><font color='red'>Red</font>: Occupied (car icon, clickable).</li>" +
-                            "<li><font color='blue'>Blue</font>: Found (after search).</li></ul></p>" +
-                            "<p><b>Plate Formats:</b><ul style='margin: 5px 0; padding-left: 20px;'>" +
-                            "<li><b>Normal</b>: UAA 123B (U, 2 letters, space, 3 digits, letter).</li>" +
-                            "<li><b>Government</b>: UG 123B (UG, space, 3 digits, letter).</li>" +
-                            "<li><b>Personalized</b>: 2–8 chars, starts with letter (e.g., ABC123, X12 Y34).</li></ul></p>"
-                            +
-                            "<p><b>Shortcuts:</b> Enter in input fields to park or search.</p>" +
-                            "<p><b>Errors:</b> Tooltips and red borders guide corrections. Input preserved for editing.</p>"
-                            +
-                            "<p><b>Accessibility:</b> High-contrast colors, preserved inputs, readable tooltips.</p>" +
-                            "<p><b>Status Bar:</b> Shows actions, clears after 5s.</p>" +
-                            "</div></html>");
-            JScrollPane scrollPane = new JScrollPane(helpLabel);
-            scrollPane.setPreferredSize(new Dimension(700, 400));
-            scrollPane.setBorder(BorderFactory.createEmptyBorder());
-            JOptionPane.showMessageDialog(ParkingView.this, scrollPane, "Help Guide", JOptionPane.INFORMATION_MESSAGE);
-        });
+        // Search Section
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        searchPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(),
+                "Search for a Car",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("SansSerif", Font.BOLD, 12)));
 
-        topPanel.add(new JLabel("License Plate:"));
-        topPanel.add(plateInput);
-        topPanel.add(validationIcon);
-        topPanel.add(parkBtn);
-        topPanel.add(helpBtn);
-
-        JPanel searchPanel = new JPanel(new FlowLayout());
         JTextField searchInput = new JTextField(15);
         searchInput.setBorder(createRoundedBorder());
         searchInput.setPreferredSize(new Dimension(200, 30));
@@ -601,14 +560,82 @@ public class ParkingView extends JFrame {
             }
         });
 
-        searchPanel.add(new JLabel("Search License Plate:"));
+        searchPanel.add(new JLabel("License Plate:"));
         searchPanel.add(searchInput);
         searchPanel.add(searchValidationIcon);
         searchPanel.add(searchBtn);
 
-        JPanel controlPanel = new JPanel(new GridLayout(2, 1));
-        controlPanel.add(topPanel);
+        // Help Button Section
+        JPanel helpPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        helpPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+
+        JButton helpBtn = new JButton("Help", createHelpIcon(16, 16));
+        helpBtn.setBorder(createRoundedBorder());
+        helpBtn.setFocusPainted(false);
+        helpBtn.setContentAreaFilled(true);
+        helpBtn.setMargin(new Insets(5, 10, 5, 10));
+        helpBtn.setIconTextGap(4);
+        helpBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        helpBtn.setToolTipText("Open help guide for using the parking system");
+        helpBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                helpBtn.setBorder(createHoverBorder());
+                helpBtn.setBackground(helpBtn.getBackground().darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                helpBtn.setBorder(createRoundedBorder());
+                helpBtn.setBackground(UIManager.getColor("Button.background"));
+            }
+        });
+        helpBtn.addActionListener(e -> {
+            JLabel helpLabel = new JLabel(
+                    "<html><div style='width: 550px; font-size: 11px; margin: 5px; line-height: 1.2;'>" +
+                            "<h3 style='margin: 5px 0;'>Car Parking System Help</h3>" +
+                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., UAA 123B, UG 123B, ABC123) in the top field. "
+                            +
+                            "Use 'Park' or Enter. Green check for valid, red X with tooltip for invalid. Input preserved on errors.</p>"
+                            +
+                            "<p><b>Searching:</b> Enter a plate in the search field, use 'Search' or Enter. Valid plates highlight slot in blue for 2s. Input preserved if invalid or not found.</p>"
+                            +
+                            "<p><b>Removing a Car:</b> Click an occupied (red) slot, confirm to unpark (irreversible).</p>"
+                            +
+                            "<p><b>Slot Status:</b><ul style='margin: 5px 0; padding-left: 20px;'>" +
+                            "<li><font color='green'>Green</font>: Empty (check icon, not clickable).</li>" +
+                            "<li><font color='red'>Red</font>: Occupied (car icon, clickable).</li>" +
+                            "<li><font color='blue'>Blue</font>: Found (after search).</li></ul></p>" +
+                            "<p><b>Plate Formats:</b><ul style='margin: 5px 0; padding-left: 20px;'>" +
+                            "<li><b>Normal</b>: UAA 123B (U, 2 letters, space, 3 digits, letter).</li>" +
+                            "<li><b>Government</b>: UG 123B (UG, space, 3 digits, letter).</li>" +
+                            "<li><b>Personalized</b>: 2–8 chars, starts with letter (e.g., ABC123, X12 Y34).</li></ul></p>"
+                            +
+                            "<p><b>Shortcuts:</b> Enter in input fields to park or search.</p>" +
+                            "<p><b>Errors:</b> Tooltips and red borders guide corrections. Input preserved for editing.</p>"
+                            +
+                            "<p><b>Accessibility:</b> High-contrast colors, preserved inputs, readable tooltips.</p>" +
+                            "<p><b>Status Bar:</b> Shows actions, clears after 5s.</p>" +
+                            "</div></html>");
+            JScrollPane scrollPane = new JScrollPane(helpLabel,
+                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setPreferredSize(new Dimension(600, 500));
+            scrollPane.setBorder(BorderFactory.createEmptyBorder());
+            JOptionPane.showMessageDialog(ParkingView.this, scrollPane, "Help Guide", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        helpPanel.add(helpBtn);
+
+        // Control Panel Layout
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
+        controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        controlPanel.add(parkPanel);
+        controlPanel.add(Box.createVerticalStrut(10)); // Spacing between sections
         controlPanel.add(searchPanel);
+        controlPanel.add(helpPanel);
+
         add(controlPanel, BorderLayout.NORTH);
 
         slotPanel = new JPanel(new GridLayout(2, 5, 5, 5));
