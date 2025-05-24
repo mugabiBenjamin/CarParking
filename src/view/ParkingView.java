@@ -4,6 +4,7 @@ import controller.ParkingController;
 import model.ParkingLot;
 import model.ParkingSlot;
 import util.Validator;
+import util.MessageBox;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -298,29 +299,43 @@ public class ParkingView extends JFrame {
             }
         });
         helpBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(ParkingView.this,
-                    "<html><h3>Car Parking System Help</h3>" +
-                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., AAA 123B) in the top input field and click 'Park' to assign the car to an available slot.</p>"
+            // Fixed-width help dialog (500px) with line breaks after each sentence
+            // Uses HTML <div> for width control and <br> for readability; black text (~21:1
+            // contrast on white)
+            JLabel helpLabel = new JLabel(
+                    "<html><div style='width: 500px;'>" +
+                            "<h3>Car Parking System Help</h3>" +
+                            "<p><b>Parking a Car:</b> Enter a license plate (e.g., AAA 123B) in the top input field.<br>"
                             +
-                            "<p><b>Searching for a Car:</b> Enter a license plate in the search field and click 'Search'. If found, the slot highlights blue for 2 seconds.</p>"
-                            +
+                            "Click 'Park' to assign the car to an available slot.<br></p>" +
+                            "<p><b>Searching for a Car:</b> Enter a license plate in the search field.<br>" +
+                            "Click 'Search'.<br>" +
+                            "If found, the slot highlights blue for 2 seconds.<br></p>" +
                             "<p><b>Slot Status:</b><br>" +
                             "- <font color='green'>Green</font>: Empty slot (checkmark icon, white text, not clickable).<br>"
                             +
                             "- <font color='red'>Red</font>: Occupied slot (car icon, black text, click to remove).<br>"
                             +
-                            "- <font color='blue'>Blue</font>: Highlighted slot (after search).</p>" +
-                            "<p><b>Removing a Car:</b> Click an occupied (red) slot to open a confirmation dialog showing the car's details (license plate, slot number). Confirm to unpark the car. This action is irreversible.</p>"
+                            "- <font color='blue'>Blue</font>: Highlighted slot (after search).<br></p>" +
+                            "<p><b>Removing a Car:</b> Click an occupied (red) slot to open a confirmation dialog.<br>"
                             +
-                            "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter). Placeholder text guides you.</p>"
+                            "The dialog shows the car's details (license plate, slot number).<br>" +
+                            "Confirm to unpark the car.<br>" +
+                            "This action is irreversible.<br></p>" +
+                            "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter).<br>" +
+                            "Placeholder text guides you.<br></p>" +
+                            "<p><b>Error Handling:</b> Error messages include specific recovery steps.<br>" +
+                            "Examples include correcting input format or checking slot status.<br>" +
+                            "These steps guide you through issues.<br></p>" +
+                            "<p><b>Status Bar:</b> Shows parking and search status at the bottom.<br>" +
+                            "It clears after 5 seconds.<br></p>" +
+                            "<p><b>Accessibility:</b> Light red for occupied slots (black text).<br>" +
+                            "Light green for empty slots (white text).<br>" +
+                            "High-contrast input fields/status bar ensure readability.<br>" +
+                            "Note: Black text on occupied slots has lower contrast but may be readable for large text.<br></p>"
                             +
-                            "<p><b>Status Bar:</b> Shows parking and search status at the bottom, clears after 5 seconds.</p>"
-                            +
-                            "<p><b>Accessibility:</b> Light red for occupied slots (black text), light green for empty slots (white text), and high-contrast input fields/status bar ensure readability. Note: Black text on occupied slots has lower contrast but may be readable for large text.</p>"
-                            +
-                            "</html>",
-                    "Help Guide",
-                    JOptionPane.INFORMATION_MESSAGE);
+                            "</div></html>");
+            JOptionPane.showMessageDialog(ParkingView.this, helpLabel, "Help Guide", JOptionPane.INFORMATION_MESSAGE);
         });
 
         topPanel.add(new JLabel("License Plate:"));
@@ -400,6 +415,23 @@ public class ParkingView extends JFrame {
         parkBtn.addActionListener(e -> {
             // Clear placeholder text before processing
             String plateText = plateInput.getText().equals("Enter AAA 123B") ? "" : plateInput.getText();
+            // Validate input and provide recovery steps
+            if (plateText.isEmpty()) {
+                MessageBox.showError("Parking failed: No license plate entered.",
+                        "Enter a valid license plate (e.g., AAA 123B) in the input field.",
+                        "Ensure the format is three letters, a space, three digits, and a letter.");
+                statusBar.setText("Parking failed: Enter a valid license plate");
+                clearStatusBar();
+                return;
+            }
+            if (!Validator.isValidPlate(plateText)) {
+                MessageBox.showError("Parking failed for license plate " + plateText + ": Invalid format.",
+                        "Correct the license plate to match the format AAA 123B.",
+                        "Use three uppercase letters, a space, three digits, and one letter.");
+                statusBar.setText("Parking failed: Invalid license plate format");
+                clearStatusBar();
+                return;
+            }
             controller.parkCar(plateText);
             updateSlots();
             // Update status bar with result (set by ParkingController via MessageBox)
@@ -407,20 +439,23 @@ public class ParkingView extends JFrame {
             plateInput.setForeground(PLACEHOLDER_COLOR);
         });
 
-        // Search action with standardized, actionable error messages
+        // Search action with standardized, actionable error messages and recovery steps
         searchBtn.addActionListener(e -> {
             // Clear placeholder text before processing
             String searchPlate = searchInput.getText().equals("Enter AAA 123B") ? "" : searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
-                MessageBox.showError("Search failed for license plate: Enter a valid license plate (e.g., AAA 123B).");
+                MessageBox.showError("Search failed: No license plate entered.",
+                        "Enter a valid license plate (e.g., AAA 123B) in the search field.",
+                        "Ensure the format is three letters, a space, three digits, and a letter.");
                 statusBar.setText("Search failed: Enter a valid license plate");
                 clearStatusBar();
                 return;
             }
 
             if (!Validator.isValidPlate(searchPlate)) {
-                MessageBox.showError(
-                        "Search failed for license plate " + searchPlate + ": Invalid format, use AAA 123B.");
+                MessageBox.showError("Search failed for license plate " + searchPlate + ": Invalid format.",
+                        "Correct the license plate to match the format AAA 123B.",
+                        "Use three uppercase letters, a space, three digits, and a letter.");
                 statusBar.setText("Search failed: Invalid license plate format");
                 clearStatusBar();
                 return;
@@ -443,9 +478,9 @@ public class ParkingView extends JFrame {
                 MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
                 clearStatusBar();
             } else {
-                statusBar.setText("Car with license plate " + searchPlate + " not found");
                 MessageBox
                         .showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
+                statusBar.setText("Car with license plate " + searchPlate + " not found");
                 clearStatusBar();
             }
 
@@ -550,7 +585,11 @@ public class ParkingView extends JFrame {
                         }
                     } catch (Exception ex) {
                         System.err.println("Error during unpark: " + ex.getMessage());
-                        MessageBox.showError("Failed to unpark car from slot " + slotNumber + ": " + ex.getMessage());
+                        MessageBox.showError("Failed to unpark car from slot " + slotNumber + ": " + ex.getMessage(),
+                                "Ensure the slot is still occupied and try again.",
+                                "If the issue persists, contact system support with error details.");
+                        statusBar.setText("Unpark failed for slot " + slotNumber);
+                        clearStatusBar();
                     } finally {
                         isDialogOpen = false;
                         System.out.println("isDialogOpen reset to false");
