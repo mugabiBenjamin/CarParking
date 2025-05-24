@@ -144,7 +144,7 @@ public class ParkingView extends JFrame {
             g2.dispose();
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
-            System.err.println("Failed to load PNG icon: " + e.getMessage());
+            System.err.println("Failed to load car PNG icon: " + e.getMessage());
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -210,9 +210,10 @@ public class ParkingView extends JFrame {
         }
     }
 
-    private ImageIcon createCheckIcon(int width, int height) {
+    private ImageIcon createCheckIcon(int width, int height, String type) {
+        String iconPath = type.equals("validation") ? "/resources/icons/check-green.png" : "/resources/icons/check.png";
         try {
-            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/check.png"));
+            BufferedImage originalImage = ImageIO.read(getClass().getResource(iconPath));
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = resizedImage.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -222,7 +223,8 @@ public class ParkingView extends JFrame {
             g2.dispose();
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
-            System.err.println("Failed to load check PNG icon: " + e.getMessage());
+            System.err.println("Failed to load " + (type.equals("validation") ? "check-green" : "check") + " PNG icon: "
+                    + e.getMessage());
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -327,7 +329,7 @@ public class ParkingView extends JFrame {
                     plateInput.setToolTipText(
                             "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
                 } else if (Validator.isValidPlate(text)) {
-                    validationIcon.setIcon(createCheckIcon(16, 16));
+                    validationIcon.setIcon(createCheckIcon(16, 16, "validation"));
                     validationIcon.setToolTipText(errorMessage);
                     plateInput.setBorder(createRoundedBorder());
                     plateInput.setToolTipText(errorMessage);
@@ -461,7 +463,7 @@ public class ParkingView extends JFrame {
                     searchInput.setToolTipText(
                             "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
                 } else if (Validator.isValidPlate(text)) {
-                    searchValidationIcon.setIcon(createCheckIcon(16, 16));
+                    searchValidationIcon.setIcon(createCheckIcon(16, 16, "validation"));
                     searchValidationIcon.setToolTipText(errorMessage);
                     searchInput.setBorder(createRoundedBorder());
                     searchInput.setToolTipText(errorMessage);
@@ -749,7 +751,7 @@ public class ParkingView extends JFrame {
     private void updateSlots() {
         slotPanel.removeAll();
         ImageIcon carIcon = createCarIcon(32, 32);
-        ImageIcon checkIcon = createCheckIcon(32, 32);
+        ImageIcon checkIcon = createCheckIcon(32, 32, "slot");
 
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
