@@ -14,6 +14,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -54,19 +56,13 @@ public class ParkingView extends JFrame {
     private JTextField plateInput;
     private JPanel slotPanel;
     private ParkingLot lot;
-    private volatile boolean isDialogOpen = false; // Prevents multiple unpark dialogs
-    private Timer statusBarTimer; // Timer to clear status bar after 5 seconds
-    private JLabel statusBar; // Reference to status bar for updates
-
-    // Colors for slot displays, used consistently for empty and occupied slots
-    // Light colors from Enhanced Unpark Confirmation
-    // Black text for occupied slots (~3.8:1 contrast, fails WCAG 4.5:1 but passes
-    // 3:1 for large text)
-    // White text for empty slots (~4.7:1 contrast, passes WCAG 4.5:1)
-    private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light green
-    private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light red
-    private final Color TEXT_COLOR = Color.WHITE; // White for empty slots and highlight restoration
-    private final Color PLACEHOLDER_COLOR = Color.GRAY; // Gray for placeholder, ~4.5:1 on white
+    private volatile boolean isDialogOpen = false;
+    private Timer statusBarTimer;
+    private JLabel statusBar;
+    private final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144);
+    private final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193);
+    private final Color TEXT_COLOR = Color.WHITE;
+    private final Color PLACEHOLDER_COLOR = Color.GRAY;
 
     public ParkingView() {
         setTitle("Car Parking System");
@@ -74,7 +70,6 @@ public class ParkingView extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Set window icon (cross-platform, relative path)
         try {
             InputStream iconStream = getClass().getResourceAsStream("/resources/icons/car.png");
             if (iconStream != null) {
@@ -89,7 +84,6 @@ public class ParkingView extends JFrame {
 
         this.lot = new ParkingLot(10);
         this.controller = new ParkingController(lot);
-        // Initialize status bar timer with a dummy listener (overridden per action)
         this.statusBarTimer = new Timer(5000, e -> {
         });
 
@@ -126,7 +120,7 @@ public class ParkingView extends JFrame {
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
-            int scale = Math.min(width / 24, height / 16); // Base size: 24x16
+            int scale = Math.min(width / 24, height / 16);
             g2.fillRect(4 * scale, 4 * scale, 16 * scale, 8 * scale);
             g2.fillOval(6 * scale, 10 * scale, 4 * scale, 4 * scale);
             g2.fillOval(14 * scale, 10 * scale, 4 * scale, 4 * scale);
@@ -153,7 +147,7 @@ public class ParkingView extends JFrame {
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
-            int scale = Math.min(width / 16, height / 16); // Base size: 16x16
+            int scale = Math.min(width / 16, height / 16);
             g2.setStroke(new BasicStroke(2 * scale));
             g2.drawOval(4 * scale, 4 * scale, 8 * scale, 8 * scale);
             g2.drawLine(10 * scale, 10 * scale, 12 * scale, 12 * scale);
@@ -179,7 +173,7 @@ public class ParkingView extends JFrame {
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
-            int scale = Math.min(width / 16, height / 16); // Base size: 16x16
+            int scale = Math.min(width / 16, height / 16);
             g2.setFont(new Font("SansSerif", Font.BOLD, 12 * scale));
             g2.drawString("?", 6 * scale, 12 * scale);
             g2.dispose();
@@ -188,9 +182,8 @@ public class ParkingView extends JFrame {
     }
 
     private ImageIcon createCheckIcon(int width, int height) {
-        // Amortized cost is O(1) for icon creation per slot
         try {
-            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/check.png"));
+            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/check-green.png"));
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = resizedImage.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -200,12 +193,12 @@ public class ParkingView extends JFrame {
             g2.dispose();
             return new ImageIcon(resizedImage);
         } catch (IOException e) {
-            System.err.println("Failed to load checkmark PNG icon: " + e.getMessage());
+            System.err.println("Failed to load green checkmark PNG icon: " + e.getMessage());
             BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = fallback.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.BLACK);
-            int scale = Math.min(width / 16, height / 16); // Base size: 16x16
+            g2.setColor(Color.GREEN); // Green for valid input
+            int scale = Math.min(width / 16, height / 16);
             g2.setStroke(new BasicStroke(2 * scale));
             g2.drawLine(4 * scale, 8 * scale, 7 * scale, 11 * scale);
             g2.drawLine(7 * scale, 11 * scale, 12 * scale, 5 * scale);
@@ -214,7 +207,32 @@ public class ParkingView extends JFrame {
         }
     }
 
-    // Clears the status bar to "Ready" after 5 seconds
+    private ImageIcon createXIcon(int width, int height) {
+        try {
+            BufferedImage originalImage = ImageIO.read(getClass().getResource("/resources/icons/x.png"));
+            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = resizedImage.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.drawImage(originalImage, 0, 0, width, height, null);
+            g2.dispose();
+            return new ImageIcon(resizedImage);
+        } catch (IOException e) {
+            System.err.println("Failed to load x PNG icon: " + e.getMessage());
+            BufferedImage fallback = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = fallback.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.RED); // Red for invalid input
+            int scale = Math.min(width / 16, height / 16);
+            g2.setStroke(new BasicStroke(2 * scale));
+            g2.drawLine(4 * scale, 4 * scale, 12 * scale, 12 * scale);
+            g2.drawLine(4 * scale, 12 * scale, 12 * scale, 4 * scale);
+            g2.dispose();
+            return new ImageIcon(fallback);
+        }
+    }
+
     private void clearStatusBar() {
         if (statusBarTimer.isRunning()) {
             statusBarTimer.stop();
@@ -240,7 +258,7 @@ public class ParkingView extends JFrame {
             public void focusGained(FocusEvent e) {
                 if (plateInput.getText().equals("Enter AAA 123B")) {
                     plateInput.setText("");
-                    plateInput.setForeground(Color.BLACK); // Black for input text, high contrast on white
+                    plateInput.setForeground(Color.BLACK);
                 }
             }
 
@@ -249,6 +267,29 @@ public class ParkingView extends JFrame {
                 if (plateInput.getText().isEmpty()) {
                     plateInput.setText("Enter AAA 123B");
                     plateInput.setForeground(PLACEHOLDER_COLOR);
+                }
+            }
+        });
+
+        // Validation icon label
+        JLabel validationIcon = new JLabel();
+        validationIcon.setPreferredSize(new Dimension(20, 20));
+        validationIcon.setToolTipText("License plate validation status");
+
+        // Real-time validation with KeyListener
+        plateInput.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String text = plateInput.getText().trim();
+                if (text.equals("Enter AAA 123B") || text.isEmpty()) {
+                    validationIcon.setIcon(null);
+                    validationIcon.setToolTipText("License plate validation status");
+                } else if (Validator.isValidPlate(text)) {
+                    validationIcon.setIcon(createCheckIcon(16, 16));
+                    validationIcon.setToolTipText("Valid license plate format");
+                } else {
+                    validationIcon.setIcon(createXIcon(16, 16));
+                    validationIcon.setToolTipText("Invalid license plate format (use AAA 123B)");
                 }
             }
         });
@@ -299,20 +340,18 @@ public class ParkingView extends JFrame {
             }
         });
         helpBtn.addActionListener(e -> {
-            // Fixed-width help dialog (500px) with line breaks after each sentence
-            // Uses HTML <div> for width control and <br> for readability; black text (~21:1
-            // contrast on white)
             JLabel helpLabel = new JLabel(
                     "<html><div style='width: 500px;'>" +
                             "<h3>Car Parking System Help</h3>" +
                             "<p><b>Parking a Car:</b> Enter a license plate (e.g., AAA 123B) in the top input field.<br>"
                             +
+                            "A green checkmark indicates a valid format, a red X indicates an invalid format.<br>" +
                             "Click 'Park' to assign the car to an available slot.<br></p>" +
                             "<p><b>Searching for a Car:</b> Enter a license plate in the search field.<br>" +
                             "Click 'Search'.<br>" +
                             "If found, the slot highlights blue for 2 seconds.<br></p>" +
                             "<p><b>Slot Status:</b><br>" +
-                            "- <font color='green'>Green</font>: Empty slot (checkmark icon, white text, not clickable).<br>"
+                            "- <font color='green'>Green</font>: Empty slot (green checkmark icon, white text, not clickable).<br>"
                             +
                             "- <font color='red'>Red</font>: Occupied slot (car icon, black text, click to remove).<br>"
                             +
@@ -323,7 +362,7 @@ public class ParkingView extends JFrame {
                             "Confirm to unpark the car.<br>" +
                             "This action is irreversible.<br></p>" +
                             "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter).<br>" +
-                            "Placeholder text guides you.<br></p>" +
+                            "Placeholder text and real-time validation guide you.<br></p>" +
                             "<p><b>Error Handling:</b> Error messages include specific recovery steps.<br>" +
                             "Examples include correcting input format or checking slot status.<br>" +
                             "These steps guide you through issues.<br></p>" +
@@ -340,11 +379,11 @@ public class ParkingView extends JFrame {
 
         topPanel.add(new JLabel("License Plate:"));
         topPanel.add(plateInput);
+        topPanel.add(validationIcon);
         topPanel.add(parkBtn);
         topPanel.add(helpBtn);
 
         JPanel searchPanel = new JPanel(new FlowLayout());
-        // Search input field for license plate with placeholder and tooltip
         JTextField searchInput = new JTextField(15);
         searchInput.setBorder(createRoundedBorder());
         searchInput.setPreferredSize(new Dimension(200, 30));
@@ -356,7 +395,7 @@ public class ParkingView extends JFrame {
             public void focusGained(FocusEvent e) {
                 if (searchInput.getText().equals("Enter AAA 123B")) {
                     searchInput.setText("");
-                    searchInput.setForeground(Color.BLACK); // Black for input text, high contrast on white
+                    searchInput.setForeground(Color.BLACK);
                 }
             }
 
@@ -369,7 +408,29 @@ public class ParkingView extends JFrame {
             }
         });
 
-        // Search button with magnifying glass icon, uniform styling, and tooltip
+        // Search validation icon label
+        JLabel searchValidationIcon = new JLabel();
+        searchValidationIcon.setPreferredSize(new Dimension(20, 20));
+        searchValidationIcon.setToolTipText("Search license plate validation status");
+
+        // Real-time validation for search input
+        searchInput.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String text = searchInput.getText().trim();
+                if (text.equals("Enter AAA 123B") || text.isEmpty()) {
+                    searchValidationIcon.setIcon(null);
+                    searchValidationIcon.setToolTipText("Search license plate validation status");
+                } else if (Validator.isValidPlate(text)) {
+                    searchValidationIcon.setIcon(createCheckIcon(16, 16));
+                    validationIcon.setToolTipText("Valid license plate format");
+                } else {
+                    searchValidationIcon.setIcon(createXIcon(16, 16));
+                    searchValidationIcon.setToolTipText("Invalid license plate format (use AAA 123B)");
+                }
+            }
+        });
+
         JButton searchBtn = new JButton("Search", createSearchIcon(16, 16));
         searchBtn.setBorder(createRoundedBorder());
         searchBtn.setFocusPainted(false);
@@ -394,6 +455,7 @@ public class ParkingView extends JFrame {
 
         searchPanel.add(new JLabel("Search License Plate:"));
         searchPanel.add(searchInput);
+        searchPanel.add(searchValidationIcon);
         searchPanel.add(searchBtn);
 
         JPanel controlPanel = new JPanel(new GridLayout(2, 1));
@@ -405,17 +467,14 @@ public class ParkingView extends JFrame {
         updateSlots();
         add(new JScrollPane(slotPanel), BorderLayout.CENTER);
 
-        // Status bar with tooltip
         statusBar = new JLabel("Ready", SwingConstants.CENTER);
-        statusBar.setForeground(Color.BLACK); // Ensure high contrast on default background
+        statusBar.setForeground(Color.BLACK);
         statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         statusBar.setToolTipText("Shows parking and search status, clears after 5 seconds");
         add(statusBar, BorderLayout.SOUTH);
 
         parkBtn.addActionListener(e -> {
-            // Clear placeholder text before processing
             String plateText = plateInput.getText().equals("Enter AAA 123B") ? "" : plateInput.getText();
-            // Validate input and provide recovery steps
             if (plateText.isEmpty()) {
                 MessageBox.showError("Parking failed: No license plate entered.",
                         "Enter a valid license plate (e.g., AAA 123B) in the input field.",
@@ -434,14 +493,13 @@ public class ParkingView extends JFrame {
             }
             controller.parkCar(plateText);
             updateSlots();
-            // Update status bar with result (set by ParkingController via MessageBox)
             plateInput.setText("Enter AAA 123B");
             plateInput.setForeground(PLACEHOLDER_COLOR);
+            validationIcon.setIcon(null);
+            validationIcon.setToolTipText("License plate validation status");
         });
 
-        // Search action with standardized, actionable error messages and recovery steps
         searchBtn.addActionListener(e -> {
-            // Clear placeholder text before processing
             String searchPlate = searchInput.getText().equals("Enter AAA 123B") ? "" : searchInput.getText().trim();
             if (searchPlate.isEmpty()) {
                 MessageBox.showError("Search failed: No license plate entered.",
@@ -455,7 +513,7 @@ public class ParkingView extends JFrame {
             if (!Validator.isValidPlate(searchPlate)) {
                 MessageBox.showError("Search failed for license plate " + searchPlate + ": Invalid format.",
                         "Correct the license plate to match the format AAA 123B.",
-                        "Use three uppercase letters, a space, three digits, and a letter.");
+                        "Use three uppercase letters, a space, three digits, and one letter.");
                 statusBar.setText("Search failed: Invalid license plate format");
                 clearStatusBar();
                 return;
@@ -474,6 +532,7 @@ public class ParkingView extends JFrame {
 
             if (found) {
                 statusBar.setText("Found car with license plate " + searchPlate + " in slot " + foundSlot);
+
                 highlightSlot(foundSlot);
                 MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + foundSlot);
                 clearStatusBar();
@@ -486,16 +545,16 @@ public class ParkingView extends JFrame {
 
             searchInput.setText("Enter AAA 123B");
             searchInput.setForeground(PLACEHOLDER_COLOR);
+            searchValidationIcon.setIcon(null);
+            searchValidationIcon.setToolTipText("Search license plate validation status");
         });
     }
 
     private void updateSlots() {
         slotPanel.removeAll();
-        ImageIcon carIcon = createCarIcon(32, 32); // Resize to 32x32 pixels for occupied slots
-        ImageIcon checkIcon = createCheckIcon(32, 32); // Resize to 32x32 pixels for empty slots
+        ImageIcon carIcon = createCarIcon(32, 32);
+        ImageIcon checkIcon = createCheckIcon(32, 32);
 
-        // Create slot buttons with consistent car (occupied) and checkmark (empty)
-        // icons
         for (var slot : lot.getSlots()) {
             JButton btn = new JButton();
 
@@ -506,29 +565,25 @@ public class ParkingView extends JFrame {
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setBackground(OCCUPIED_SLOT_COLOR);
-                btn.setForeground(Color.BLACK); // Black text for occupied slots, ~3.8:1 contrast
+                btn.setForeground(Color.BLACK);
             } else {
                 btn.setText("Empty");
                 btn.setIcon(checkIcon);
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setBackground(EMPTY_SLOT_COLOR);
-                btn.setForeground(TEXT_COLOR); // White text for empty slots, ~4.7:1 contrast
-                btn.setEnabled(false); // Disable empty slots to prevent interaction
+                btn.setForeground(TEXT_COLOR);
+                btn.setEnabled(false);
             }
 
-            // Uniform styling for slot buttons with rounded border, hover effect, and
-            // dynamic tooltip
             btn.setToolTipText("Slot " + slot.getNumber() + ": " +
-                    (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (checkmark, not clickable)"));
+                    (slot.isOccupied() ? "Occupied, click to remove (car)" : "Empty (green checkmark, not clickable)"));
             btn.setBorder(createRoundedBorder());
             btn.setFocusPainted(false);
             btn.setContentAreaFilled(true);
             btn.setMargin(new Insets(5, 10, 5, 10));
 
             btn.addMouseListener(new MouseAdapter() {
-                // Hover effect darkens EMPTY_SLOT_COLOR or OCCUPIED_SLOT_COLOR for enabled
-                // buttons
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     if (btn.isEnabled()) {
@@ -549,16 +604,13 @@ public class ParkingView extends JFrame {
 
             int slotNumber = slot.getNumber();
             btn.addActionListener(e -> {
-                // Log click event to confirm listener is triggered
                 System.out.println("Clicked slot " + slotNumber + ", occupied: " + slot.isOccupied()
                         + ", isDialogOpen: " + isDialogOpen);
                 if (slot.isOccupied() && !isDialogOpen) {
                     try {
                         isDialogOpen = true;
-                        // Store plate number before unparking
                         String plateNumber = slot.getCar().getPlateNumber();
                         System.out.println("Showing unpark dialog for slot " + slotNumber + ", plate: " + plateNumber);
-                        // Enhanced confirmation dialog with car details
                         int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
                                 "<html><h3>Confirm Unpark</h3>" +
                                         "<p><b>Car Details:</b></p>" +
@@ -579,7 +631,6 @@ public class ParkingView extends JFrame {
                                     "Removed car with license plate " + plateNumber + " from slot " + slotNumber);
                             clearStatusBar();
                             updateSlots();
-                            // Ensure UI refresh
                             slotPanel.revalidate();
                             slotPanel.repaint();
                         }
@@ -612,13 +663,11 @@ public class ParkingView extends JFrame {
             if (comp instanceof JButton) {
                 JButton btn = (JButton) comp;
                 ParkingSlot slot = lot.getSlots().get(slotNumber - 1);
-                // Temporarily highlight slot in blue, then restore consistent slot color
                 btn.setBackground(Color.BLUE);
                 btn.setForeground(Color.WHITE);
                 Timer timer = new Timer(2000, e -> {
                     btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
-                    btn.setForeground(slot.isOccupied() ? Color.BLACK : TEXT_COLOR); // Black for occupied, white for
-                                                                                     // empty
+                    btn.setForeground(slot.isOccupied() ? Color.BLACK : TEXT_COLOR);
                 });
                 timer.setRepeats(false);
                 timer.start();
