@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -21,6 +22,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 class RoundedBorder implements Border {
     private int radius;
@@ -73,6 +75,73 @@ public class ParkingView extends JFrame {
         setSize(600, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+
+        // Add Help Menu
+        JMenuBar menuBar = new JMenuBar();
+        JMenu helpMenu = new JMenu("Help");
+        helpMenu.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+        JMenuItem visitGithubItem = new JMenuItem("Visit GitHub Repository");
+        visitGithubItem.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        visitGithubItem.setToolTipText("Open the GitHub repository in your browser");
+        visitGithubItem.addActionListener(e -> {
+            String url = "https://github.com/mugabiBenjamin/CarParking.git";
+            boolean opened = false;
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        desktop.browse(new URI(url));
+                        statusBar.setText("Opened GitHub repository");
+                        clearStatusBar();
+                        opened = true;
+                    } catch (Exception ex) {
+                        System.err.println("Desktop.browse failed: " + ex.getMessage());
+                    }
+                }
+            }
+            if (!opened) {
+                try {
+                    String os = System.getProperty("os.name").toLowerCase();
+                    String command;
+                    if (os.contains("linux")) {
+                        command = "xdg-open " + url;
+                    } else if (os.contains("mac")) {
+                        command = "open " + url;
+                    } else if (os.contains("win")) {
+                        command = "start " + url;
+                    } else {
+                        throw new UnsupportedOperationException("Unsupported OS");
+                    }
+                    Runtime.getRuntime().exec(command);
+                    statusBar.setText("Opened GitHub repository");
+                    clearStatusBar();
+                    opened = true;
+                } catch (Exception ex) {
+                    System.err.println("Command execution failed: " + ex.getMessage());
+                }
+            }
+            if (!opened) {
+                JPanel panel = new JPanel(new BorderLayout());
+                JLabel label = new JLabel("<html>Could not open browser. Please visit:<br>" + url + "</html>");
+                JButton copyButton = new JButton("Copy URL to Clipboard");
+                copyButton.addActionListener(e2 -> {
+                    Toolkit.getDefaultToolkit().getSystemClipboard()
+                            .setContents(new StringSelection(url), null);
+                    statusBar.setText("GitHub URL copied to clipboard");
+                    clearStatusBar();
+                });
+                panel.add(label, BorderLayout.CENTER);
+                panel.add(copyButton, BorderLayout.SOUTH);
+                JOptionPane.showMessageDialog(this, panel, "Open GitHub Manually", JOptionPane.INFORMATION_MESSAGE);
+                statusBar.setText("Displayed GitHub URL");
+                clearStatusBar();
+            }
+        });
+
+        helpMenu.add(visitGithubItem);
+        menuBar.add(helpMenu);
+        setJMenuBar(menuBar);
 
         try {
             InputStream iconStream = getClass().getResourceAsStream("/resources/icons/car.png");
@@ -616,6 +685,7 @@ public class ParkingView extends JFrame {
                             "<p><b>Shortcuts:</b> Enter in input fields to park or search.</p>" +
                             "<p><b>Errors:</b> Tooltips and red borders guide corrections. Input preserved for editing.</p>"
                             +
+                            "<p><b>Documentation:</b> Use the Help menu to visit the GitHub repository.</p>" +
                             "<p><b>Accessibility:</b> High-contrast colors, preserved inputs, readable tooltips.</p>" +
                             "<p><b>Status Bar:</b> Shows actions, clears after 5s.</p>" +
                             "</div></html>");
