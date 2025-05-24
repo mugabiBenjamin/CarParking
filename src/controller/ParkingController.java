@@ -2,8 +2,8 @@ package controller;
 
 import model.*;
 import util.Logger;
+import util.MessageBox;
 import util.Validator;
-import view.MessageBox;
 
 import java.util.Optional;
 
