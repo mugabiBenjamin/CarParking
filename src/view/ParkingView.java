@@ -308,7 +308,7 @@ public class ParkingView extends JFrame {
                             "- <font color='green'>Green</font>: Empty slot (checkmark icon, not clickable).<br>" +
                             "- <font color='red'>Red</font>: Occupied slot (car icon, click to remove).<br>" +
                             "- <font color='blue'>Blue</font>: Highlighted slot (after search).</p>" +
-                            "<p><b>Removing a Car:</b> Click an occupied (red) slot and confirm to unpark the car.</p>"
+                            "<p><b>Removing a Car:</b> Click an occupied (red) slot to open a confirmation dialog showing the car's details (license plate, slot number). Confirm to unpark the car. This action is irreversible.</p>"
                             +
                             "<p><b>Input Format:</b> Use AAA 123B (3 letters, space, 3 digits, letter). Placeholder text guides you.</p>"
                             +
@@ -517,9 +517,20 @@ public class ParkingView extends JFrame {
                         // Store plate number before unparking
                         String plateNumber = slot.getCar().getPlateNumber();
                         System.out.println("Showing unpark dialog for slot " + slotNumber + ", plate: " + plateNumber);
+                        // Enhanced confirmation dialog with car details
                         int confirm = JOptionPane.showConfirmDialog(ParkingView.this,
-                                "Remove car with license plate " + plateNumber + " from Slot " + slotNumber + "?",
-                                "Confirm Removal", JOptionPane.YES_NO_OPTION);
+                                "<html><h3>Confirm Unpark</h3>" +
+                                        "<p><b>Car Details:</b></p>" +
+                                        "<ul>" +
+                                        "<li><b>License Plate:</b> " + plateNumber + "</li>" +
+                                        "<li><b>Slot Number:</b> " + slotNumber + "</li>" +
+                                        "<li><b>Additional Details:</b> No additional details available</li>" +
+                                        "</ul>" +
+                                        "<p><font color='red'><b>Warning:</b> This action is irreversible. The car will be removed from the parking system.</font></p>"
+                                        +
+                                        "<p>Do you want to proceed?</p>" +
+                                        "</html>",
+                                "Unpark Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                         if (confirm == JOptionPane.YES_OPTION) {
                             System.out.println("Unparking car from slot " + slotNumber);
                             controller.unparkCar(slotNumber);
