@@ -335,13 +335,18 @@ public class ParkingView extends JFrame {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String plateText = plateInput.getText().equals("Enter A123B") ? "" : plateInput.getText();
+                    String plateText = plateInput.getText().equals("Enter A123B") ? "" : plateInput.getText().trim();
                     if (plateText.isEmpty()) {
                         MessageBox.showError("Parking failed: No license plate entered.",
                                 "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123) in the input field.",
                                 "Ensure the plate follows one of the allowed formats.");
                         statusBar.setText("Parking failed: Enter a valid license plate");
                         clearStatusBar();
+                        plateInput.setBorder(createRoundedBorder());
+                        validationIcon.setIcon(null);
+                        validationIcon.setToolTipText("License plate validation status");
+                        plateInput.setToolTipText(
+                                "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
                         return;
                     }
                     if (!Validator.isValidPlate(plateText)) {
@@ -350,6 +355,7 @@ public class ParkingView extends JFrame {
                                 "Examples: UYZ 123B, UG 456C, ABC123. Ensure the format is correct.");
                         statusBar.setText("Parking failed: Invalid license plate format");
                         clearStatusBar();
+                        plateInput.requestFocusInWindow();
                         return;
                     }
                     controller.parkCar(plateText);
@@ -418,10 +424,12 @@ public class ParkingView extends JFrame {
                             +
                             "A green checkmark indicates a valid format, a red X indicates an invalid format with a tooltip showing the error.<br>"
                             +
-                            "Invalid inputs show a red border and specific error messages in tooltips.<br>" +
+                            "Invalid inputs show a red border and specific error messages in tooltips. Your input is preserved so you can correct it.<br>"
+                            +
                             "Click 'Park' or press Enter to assign the car to an available slot.<br></p>" +
                             "<p><b>Searching for a Car:</b> Enter a license plate in the search field.<br>" +
-                            "Validation works the same as the parking input, with tooltips and border feedback.<br>" +
+                            "Validation works the same as the parking input, with tooltips and border feedback. Invalid inputs are preserved for correction.<br>"
+                            +
                             "Click 'Search' or press Enter.<br>" +
                             "If found, the slot highlights blue for 2 seconds.<br></p>" +
                             "<p><b>Slot Status:</b><br>" +
@@ -448,13 +456,14 @@ public class ParkingView extends JFrame {
                             "- Press <b>Enter</b> in the search field to search for a car.<br></p>" +
                             "<p><b>Error Handling:</b> Error messages include specific recovery steps.<br>" +
                             "Tooltips provide immediate feedback to prevent errors before submission.<br>" +
-                            "Examples include correcting input format or checking slot status.<br></p>" +
+                            "Invalid inputs are not cleared, allowing you to edit and resubmit.<br></p>" +
                             "<p><b>Status Bar:</b> Shows parking and search status at the bottom.<br>" +
                             "It clears after 5 seconds.<br></p>" +
                             "<p><b>Accessibility:</b> Light red for occupied slots (black text).<br>" +
                             "Light green for empty slots (white text).<br>" +
                             "High-contrast input fields/status bar and dynamic tooltips ensure readability.<br>" +
-                            "Red borders highlight invalid inputs for clarity.<br></p>" +
+                            "Red borders highlight invalid inputs, and inputs are preserved for easy correction.<br></p>"
+                            +
                             "</div></html>");
             JOptionPane.showMessageDialog(ParkingView.this, helpLabel, "Help Guide", JOptionPane.INFORMATION_MESSAGE);
         });
@@ -535,6 +544,11 @@ public class ParkingView extends JFrame {
                                 "Ensure the plate follows one of the allowed formats.");
                         statusBar.setText("Search failed: Enter a valid license plate");
                         clearStatusBar();
+                        searchInput.setBorder(createRoundedBorder());
+                        searchValidationIcon.setIcon(null);
+                        searchValidationIcon.setToolTipText("Search license plate validation status");
+                        searchInput.setToolTipText(
+                                "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
                         return;
                     }
 
@@ -544,6 +558,7 @@ public class ParkingView extends JFrame {
                                 "Examples: UYZ 123B, UG 456C, ABC123. Ensure the format is correct.");
                         statusBar.setText("Search failed: Invalid license plate format");
                         clearStatusBar();
+                        searchInput.requestFocusInWindow();
                         return;
                     }
 
@@ -568,6 +583,8 @@ public class ParkingView extends JFrame {
                                 "Search failed: No car with license plate " + searchPlate + " is currently parked.");
                         statusBar.setText("Car with license plate " + searchPlate + " not found");
                         clearStatusBar();
+                        searchInput.requestFocusInWindow();
+                        return;
                     }
 
                     searchInput.setText("Enter A123B");
@@ -624,13 +641,19 @@ public class ParkingView extends JFrame {
         add(statusBar, BorderLayout.SOUTH);
 
         parkBtn.addActionListener(e -> {
-            String plateText = plateInput.getText().equals("Enter A123B") ? "" : plateInput.getText();
+            String plateText = plateInput.getText().equals("Enter A123B") ? "" : plateInput.getText().trim();
             if (plateText.isEmpty()) {
                 MessageBox.showError("Parking failed: No license plate entered.",
                         "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123) in the input field.",
                         "Ensure the plate follows one of the allowed formats.");
                 statusBar.setText("Parking failed: Enter a valid license plate");
                 clearStatusBar();
+                plateInput.setBorder(createRoundedBorder());
+                validationIcon.setIcon(null);
+                validationIcon.setToolTipText("License plate validation status");
+                plateInput.setToolTipText(
+                        "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+                plateInput.requestFocusInWindow();
                 return;
             }
             if (!Validator.isValidPlate(plateText)) {
@@ -639,6 +662,7 @@ public class ParkingView extends JFrame {
                         "Examples: UYZ 123B, UG 456C, ABC123. Ensure the format is correct.");
                 statusBar.setText("Parking failed: Invalid license plate format");
                 clearStatusBar();
+                plateInput.requestFocusInWindow();
                 return;
             }
             controller.parkCar(plateText);
@@ -660,6 +684,12 @@ public class ParkingView extends JFrame {
                         "Ensure the plate follows one of the allowed formats.");
                 statusBar.setText("Search failed: Enter a valid license plate");
                 clearStatusBar();
+                searchInput.setBorder(createRoundedBorder());
+                searchValidationIcon.setIcon(null);
+                searchValidationIcon.setToolTipText("Search license plate validation status");
+                searchInput.setToolTipText(
+                        "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+                searchInput.requestFocusInWindow();
                 return;
             }
 
@@ -669,6 +699,7 @@ public class ParkingView extends JFrame {
                         "Examples: UYZ 123B, UG 456C, ABC123. Ensure the format is correct.");
                 statusBar.setText("Search failed: Invalid license plate format");
                 clearStatusBar();
+                searchInput.requestFocusInWindow();
                 return;
             }
 
@@ -693,6 +724,8 @@ public class ParkingView extends JFrame {
                         .showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
                 statusBar.setText("Car with license plate " + searchPlate + " not found");
                 clearStatusBar();
+                searchInput.requestFocusInWindow();
+                return;
             }
 
             searchInput.setText("Enter A123B");
