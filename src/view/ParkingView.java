@@ -1,8 +1,9 @@
 package view;
 
-import controller.ParkingController;
+import controller.*;
 import model.ParkingLot;
 import util.Logger;
+import util.MessageBox;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-public class ParkingView extends JFrame {
+public class ParkingView extends JFrame implements ParkingListener {
     private final ParkingController controller;
     private final ParkingLot lot;
     private JLabel statusBar;
@@ -25,7 +26,7 @@ public class ParkingView extends JFrame {
 
     public ParkingView() {
         setTitle("Car Parking System");
-        setSize(600, 700); // Updated to 600x700
+        setSize(600, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -100,6 +101,51 @@ public class ParkingView extends JFrame {
         add(statusBar, BorderLayout.SOUTH);
 
         slotPanel.updateSlots();
+    }
+
+    @Override
+    public void onParkResult(ParkResult result) {
+        if (result.isSuccess()) {
+            slotPanel.updateSlots();
+            MessageBox.showInfo(result.getMessage());
+        } else {
+            MessageBox.showError(result.getMessage(), "Check the license plate format or availability.");
+        }
+        updateStatusBar(result.getMessage());
+    }
+
+    @Override
+    public void onUnparkResult(UnparkResult result) {
+        if (result.isSuccess()) {
+            slotPanel.updateSlots();
+            MessageBox.showInfo(result.getMessage());
+        }
+        updateStatusBar(result.getMessage());
+    }
+
+    @Override
+    public void onBatchUnparkResult(BatchUnparkResult result) {
+        if (result.getUnparkedCount() > 0) {
+            slotPanel.updateSlots();
+            MessageBox.showInfo(result.getMessage());
+        }
+        updateStatusBar(result.getMessage());
+    }
+
+    @Override
+    public void onFindCarResult(FindCarResult result) {
+        if (result.isFound()) {
+            slotPanel.highlightSlot(result.getSlot().getNumber());
+            MessageBox.showInfo(result.getMessage());
+        } else {
+            MessageBox.showInfo(result.getMessage());
+        }
+        updateStatusBar(result.getMessage());
+    }
+
+    @Override
+    public void onStatusUpdate(String message) {
+        updateStatusBar(message);
     }
 
     public void updateStatusBar(String message) {
