@@ -5,6 +5,8 @@ import model.ParkingLot;
 import model.ParkingSlot;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,7 +14,7 @@ public class FileHelper {
     private final String filePath;
 
     public FileHelper(String filePath) {
-        this.filePath = filePath;
+        this.filePath = "data/" + filePath;
     }
 
     public void loadFromFile(ParkingLot lot) throws IOException {
@@ -55,6 +57,10 @@ public class FileHelper {
     }
 
     public void save(ParkingLot lot) throws IOException {
+        File dir = new File("data");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (ParkingSlot slot : lot.getSlots()) {
                 String line = "(" + slot.getNumber() + ", "
@@ -63,6 +69,27 @@ public class FileHelper {
                 writer.newLine();
             }
             Logger.log("Parking lot data saved to " + filePath);
+        }
+    }
+
+    public void generateReport(ParkingLot lot) throws IOException {
+        File dir = new File("data");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        String reportFilePath = "data/parking_lot_report.csv";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(reportFilePath))) {
+            writer.write("Slot Number,Occupancy Status,License Plate,Parked At");
+            writer.newLine();
+            for (ParkingSlot slot : lot.getSlots()) {
+                String status = slot.isOccupied() ? "Occupied" : "Empty";
+                String licensePlate = slot.isOccupied() ? slot.getCar().getPlateNumber() : "";
+                String parkedAt = slot.isOccupied() ? sdf.format(new Date(slot.getCar().getParkedAt())) : "";
+                writer.write(slot.getNumber() + "," + status + "," + licensePlate + "," + parkedAt);
+                writer.newLine();
+            }
+            Logger.log("Report generated at " + reportFilePath);
         }
     }
 }
