@@ -2,6 +2,8 @@ package view;
 
 import controller.ParkingController;
 import model.ParkingLot;
+import util.Logger;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -14,8 +16,10 @@ import java.net.URI;
 public class ParkingView extends JFrame {
     private final ParkingController controller;
     private final ParkingLot lot;
-    private JLabel statusBar; // Removed 'final' to allow assignment in initUI
+    private JLabel statusBar;
     private SlotPanel slotPanel;
+    private ParkPanel parkPanel;
+    private SearchPanel searchPanel;
     private final Timer statusBarTimer;
 
     public ParkingView() {
@@ -51,12 +55,17 @@ public class ParkingView extends JFrame {
         }
 
         this.lot = new ParkingLot(10);
-        this.controller = new ParkingController(lot);
-        this.slotPanel = null;
+        this.controller = new ParkingController(lot, this);
         this.statusBarTimer = new Timer(5000, e -> statusBar.setText("Ready"));
         this.statusBarTimer.setRepeats(false);
 
         initUI();
+        // Set initial focus to ParkPanel's plateInput
+        if (parkPanel != null && parkPanel.getPlateInput() != null) {
+            boolean focused = parkPanel.getPlateInput().requestFocusInWindow();
+            Logger.log("ParkingView: Requested focus for ParkPanel plateInput, success=" + focused);
+        }
+        controller.loadParkingData();
         setVisible(true);
     }
 
@@ -66,14 +75,16 @@ public class ParkingView extends JFrame {
         statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         statusBar.setToolTipText("Shows parking and search status, clears after 5 seconds");
 
-        ParkPanel parkPanel = new ParkPanel(controller);
-        SearchPanel searchPanel = new SearchPanel(controller, slotPanel, statusBar);
-        HelpPanel helpPanel = new HelpPanel(statusBar);
         slotPanel = new SlotPanel(controller, lot, statusBar);
+
+        parkPanel = new ParkPanel(controller, statusBar);
+        searchPanel = new SearchPanel(controller, slotPanel, statusBar);
+        HelpPanel helpPanel = new HelpPanel(statusBar);
 
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        controlPanel.setFocusable(true);
         controlPanel.add(parkPanel);
         controlPanel.add(Box.createVerticalStrut(10));
         controlPanel.add(searchPanel);
@@ -83,8 +94,12 @@ public class ParkingView extends JFrame {
         add(new JScrollPane(slotPanel), BorderLayout.CENTER);
         add(statusBar, BorderLayout.SOUTH);
 
-        // Update slots after initialization
         slotPanel.updateSlots();
+    }
+
+    public void updateStatusBar(String message) {
+        statusBar.setText(message);
+        statusBarTimer.restart();
     }
 
     private void openGitHubRepository() {
@@ -95,8 +110,7 @@ public class ParkingView extends JFrame {
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 try {
                     desktop.browse(new URI(url));
-                    statusBar.setText("Opened GitHub repository");
-                    statusBarTimer.restart();
+                    updateStatusBar("Opened GitHub repository");
                     opened = true;
                 } catch (Exception ex) {
                     System.err.println("Desktop.browse failed: " + ex.getMessage());
@@ -117,8 +131,7 @@ public class ParkingView extends JFrame {
                     throw new UnsupportedOperationException("Unsupported OS");
                 }
                 Runtime.getRuntime().exec(command);
-                statusBar.setText("Opened GitHub repository");
-                statusBarTimer.restart();
+                updateStatusBar("Opened GitHub repository");
                 opened = true;
             } catch (Exception ex) {
                 System.err.println("Command execution failed: " + ex.getMessage());
@@ -131,14 +144,12 @@ public class ParkingView extends JFrame {
             copyButton.addActionListener(e2 -> {
                 Toolkit.getDefaultToolkit().getSystemClipboard()
                         .setContents(new StringSelection(url), null);
-                statusBar.setText("GitHub URL copied to clipboard");
-                statusBarTimer.restart();
+                updateStatusBar("GitHub URL copied to clipboard");
             });
             panel.add(label, BorderLayout.CENTER);
             panel.add(copyButton, BorderLayout.SOUTH);
             JOptionPane.showMessageDialog(this, panel, "Open GitHub Manually", JOptionPane.INFORMATION_MESSAGE);
-            statusBar.setText("Displayed GitHub URL");
-            statusBarTimer.restart();
+            updateStatusBar("Displayed GitHub URL");
         }
     }
 
@@ -149,5 +160,13 @@ public class ParkingView extends JFrame {
 
     public JLabel getStatusBar() {
         return statusBar;
+    }
+
+    public ParkPanel getParkPanel() {
+        return parkPanel;
+    }
+
+    public SearchPanel getSearchPanel() {
+        return searchPanel;
     }
 }
