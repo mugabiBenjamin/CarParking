@@ -1,7 +1,6 @@
 package view;
 
 import controller.ParkingController;
-import model.ParkingSlot;
 import util.IconUtil;
 import util.Logger;
 import util.MessageBox;
@@ -13,7 +12,6 @@ import javax.swing.border.TitledBorder;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Optional;
 
 public class SearchPanel extends JPanel {
     private final ParkingController controller;
@@ -24,12 +22,10 @@ public class SearchPanel extends JPanel {
     private static final Border ERROR_BORDER = BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Color.RED, 1),
             BorderFactory.createEmptyBorder(5, 10, 5, 10));
-    private final SlotPanel slotPanel;
     private final JLabel statusBar;
 
     public SearchPanel(ParkingController controller, SlotPanel slotPanel, JLabel statusBar) {
         this.controller = controller;
-        this.slotPanel = slotPanel;
         this.statusBar = statusBar;
         setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(),
@@ -52,11 +48,11 @@ public class SearchPanel extends JPanel {
         searchInput.setMargin(new Insets(5, 10, 5, 10));
         searchInput.setText("Enter A123B");
         searchInput.setForeground(PLACEHOLDER_COLOR);
-        searchInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+        searchInput
+                .setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
         searchInput.setEnabled(true);
         searchInput.setFocusable(true);
         searchInput.setRequestFocusEnabled(true);
-        // Debug: Log click events
         searchInput.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -85,7 +81,8 @@ public class SearchPanel extends JPanel {
         searchButton.setMargin(new Insets(5, 10, 5, 10));
         searchButton.setIconTextGap(4);
         searchButton.setHorizontalTextPosition(SwingConstants.RIGHT);
-        searchButton.setToolTipText("Search for a car; found slot highlights blue for 2 seconds (Enter in input field)");
+        searchButton
+                .setToolTipText("Search for a car; found slot highlights blue for 2 seconds (Enter in input field)");
         searchButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -143,7 +140,8 @@ public class SearchPanel extends JPanel {
                     searchInput.setBorder(new RoundedBorder(8, 1));
                     searchValidationIcon.setIcon(null);
                     searchValidationIcon.setToolTipText("Search license plate validation status");
-                    searchInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+                    searchInput.setToolTipText(
+                            "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
                 } else if (Validator.isValidPlate(text)) {
                     searchInput.setBorder(new RoundedBorder(8, 1));
                     searchValidationIcon.setIcon(IconUtil.createCheckIcon(16, 16, "validation"));
@@ -197,16 +195,7 @@ public class SearchPanel extends JPanel {
             statusBar.setText("Search failed: Invalid input");
             return;
         }
-        Optional<ParkingSlot> foundSlot = controller.findCarByPlate(searchPlate);
-        if (foundSlot.isPresent()) {
-            int slotNumber = foundSlot.get().getNumber();
-            slotPanel.highlightSlot(slotNumber);
-            MessageBox.showInfo("Car with license plate " + searchPlate + " found in slot " + slotNumber);
-        } else {
-            MessageBox.showInfo("Search failed: No car with license plate " + searchPlate + " is currently parked.");
-            statusBar.setText("Car with license plate " + searchPlate + " not found");
-            searchInput.requestFocusInWindow();
-        }
+        controller.findCarByPlate(searchPlate);
         resetInputField();
     }
 
@@ -219,7 +208,8 @@ public class SearchPanel extends JPanel {
             searchInput.setBorder(new RoundedBorder(8, 1));
             searchValidationIcon.setIcon(null);
             searchValidationIcon.setToolTipText("Search license plate validation status");
-            searchInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+            searchInput.setToolTipText(
+                    "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
             searchInput.requestFocusInWindow();
             return false;
         }
@@ -240,7 +230,8 @@ public class SearchPanel extends JPanel {
         searchInput.setBorder(new RoundedBorder(8, 1));
         searchValidationIcon.setIcon(null);
         searchValidationIcon.setToolTipText("Search license plate validation status");
-        searchInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+        searchInput
+                .setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
     }
 
     // For testing
