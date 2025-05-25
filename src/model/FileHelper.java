@@ -3,9 +3,10 @@ package model;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import util.Logger;
+import util.MessageBox;
 
 public class FileHelper {
-
     private static String FILE_PATH;
     private static final String DEFAULT_CONFIG_PATH = "config.properties";
 
@@ -15,7 +16,6 @@ public class FileHelper {
     }
 
     private static void initializeFilePath() {
-        // First try to load from config file
         try {
             Properties properties = new Properties();
             File configFile = new File(DEFAULT_CONFIG_PATH);
@@ -24,32 +24,30 @@ public class FileHelper {
                 try (FileInputStream fis = new FileInputStream(configFile)) {
                     properties.load(fis);
                     String configuredPath = properties.getProperty("parking.data.file");
-
                     if (configuredPath != null && !configuredPath.isBlank()) {
-                        // Convert to absolute path based on user.dir
                         Path basePath = Paths.get(System.getProperty("user.dir"));
                         Path absolutePath = basePath.resolve(configuredPath).normalize();
                         FILE_PATH = absolutePath.toString();
-                        System.out.println("Using configured data path: " + FILE_PATH);
+                        Logger.log("Using configured data path: " + FILE_PATH);
                         return;
                     }
                 }
             }
-        } catch (Exception e) {
-            System.err.println("Error loading configuration: " + e.getMessage());
+            // Fallback to default path
+            FILE_PATH = Paths.get(System.getProperty("user.dir"), "data", "parking_lot.txt").toString();
+            Logger.log("Using default data path: " + FILE_PATH);
+        } catch (IOException e) {
+            handleIOException("Failed to initialize file path from config", e,
+                    "Check if config.properties exists and is readable.");
         }
-
-        // Fallback to a sensible default if config loading fails
-        FILE_PATH = Paths.get(System.getProperty("user.dir"), "data", "parking_lot.txt").toString();
-        System.out.println("Using default data path: " + FILE_PATH);
     }
 
     // Load license plate data for parking slots
-    public static List<String> loadSlotData() {
+    public static List<String> loadSlotData() throws IOException {
         List<String> data = new ArrayList<>();
         File file = new File(FILE_PATH);
-
         if (!file.exists()) {
+            Logger.log("No existing parking data file found at: " + FILE_PATH);
             return data;
         }
 
@@ -59,16 +57,18 @@ public class FileHelper {
                 data.add(line.trim());
             }
         } catch (IOException e) {
-            System.err.println("Error reading license plate data: " + e.getMessage());
+            handleIOException("Failed to read parking data from " + FILE_PATH, e,
+                    "Ensure the file exists and is readable.",
+                    "Check file permissions or disk space.");
+            throw e; // Propagate to allow caller to handle
         }
-
+        Logger.log("Successfully loaded parking data from: " + FILE_PATH);
         return data;
     }
 
     // Save license plate data for parking slots
-    public static void saveSlotData(List<ParkingSlot> slots) {
+    public static void saveSlotData(List<ParkingSlot> slots) throws IOException {
         ensureDataFolderExists();
-
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
             for (ParkingSlot slot : slots) {
                 if (slot.isOccupied()) {
@@ -79,20 +79,35 @@ public class FileHelper {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.err.println("Error writing license plate data: " + e.getMessage());
+            handleIOException("Failed to write parking data to " + FILE_PATH, e,
+                    "Ensure the file is writable and there is sufficient disk space.",
+                    "Check file permissions.");
+            throw e; // Propagate to allow caller to handle
         }
+        Logger.log("Successfully saved parking data to: " + FILE_PATH);
     }
 
     public static void ensureDataFolderExists() {
         File file = new File(FILE_PATH);
         File dir = file.getParentFile();
         if (dir != null && !dir.exists()) {
-            boolean created = dir.mkdirs();
-            if (created) {
-                System.out.println("Created directory: " + dir.getAbsolutePath());
-            } else {
-                System.err.println("Failed to create directory: " + dir.getAbsolutePath());
+            try {
+                boolean created = dir.mkdirs();
+                if (created) {
+                    Logger.log("Created directory: " + dir.getAbsolutePath());
+                } else {
+                    throw new IOException("Failed to create directory: " + dir.getAbsolutePath());
+                }
+            } catch (IOException e) {
+                handleIOException("Failed to create data directory: " + dir.getAbsolutePath(), e,
+                        "Ensure the parent directory is writable.",
+                        "Check system permissions or disk space.");
             }
         }
+    }
+
+    private static void handleIOException(String message, IOException e, String... recoverySteps) {
+        Logger.log(message + ": " + e.getMessage());
+        MessageBox.showError(message, recoverySteps);
     }
 }
