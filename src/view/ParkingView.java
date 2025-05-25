@@ -25,7 +25,7 @@ public class ParkingView extends JFrame {
 
     public ParkingView() {
         setTitle("Car Parking System");
-        setSize(600, 600);
+        setSize(600, 700); // Updated to 600x700
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 

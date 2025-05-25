@@ -34,29 +34,25 @@ public class ParkingSlotPanel extends JPanel {
 
     private void initComponents() {
         // Content panel for icon and text
-        slotContentPanel = new JPanel();
-        slotContentPanel.setLayout(new BoxLayout(slotContentPanel, BoxLayout.Y_AXIS));
+        slotContentPanel = new JPanel(new GridBagLayout());
         slotContentPanel.setOpaque(false);
-        Logger.log("Slot " + slot.getNumber() + ": Initialized slotContentPanel with BoxLayout.Y_AXIS");
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.insets = new Insets(2, 0, 5, 0); // 5px gap between icon and text
+        gbc.anchor = GridBagConstraints.CENTER;
+        Logger.log("Slot " + slot.getNumber() + ": Initialized slotContentPanel with GridBagLayout");
 
         // Icon label
         iconLabel = new JLabel();
-        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 
         // Text label
         textLabel = new JLabel("", SwingConstants.CENTER);
         textLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        textLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        textLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
 
-        // Add components with vertical spacing
-        slotContentPanel.add(Box.createVerticalGlue());
-        slotContentPanel.add(iconLabel);
-        slotContentPanel.add(Box.createVerticalStrut(4)); // Spacing between icon and text
-        slotContentPanel.add(textLabel);
-        slotContentPanel.add(Box.createVerticalGlue());
+        // Add components
+        slotContentPanel.add(iconLabel, gbc);
+        slotContentPanel.add(textLabel, gbc);
 
         unparkButton = new JButton(IconUtil.createUnparkIcon(16, 16));
         unparkButton.setFocusPainted(false);
@@ -94,21 +90,21 @@ public class ParkingSlotPanel extends JPanel {
     public void updateSlot() {
         if (slot.isOccupied()) {
             setBackground(OCCUPIED_COLOR);
-            Icon carIcon = IconUtil.createCarIcon(16, 16);
+            Icon carIcon = IconUtil.createCarIcon(20, 20); // Increased to 20x20
             iconLabel.setIcon(carIcon);
             textLabel.setText(slot.getCar().getPlateNumber());
             unparkButton.setEnabled(true);
             selectCheckBox.setEnabled(true);
-            Logger.log("Slot " + slot.getNumber() + ": Set car.png (16x16), Plate: " + slot.getCar().getPlateNumber());
+            Logger.log("Slot " + slot.getNumber() + ": Set car.png (20x20), Plate: " + slot.getCar().getPlateNumber());
         } else {
             setBackground(EMPTY_COLOR);
-            Icon checkIcon = IconUtil.createCheckIcon(16, 16, "slot");
+            Icon checkIcon = IconUtil.createCheckIcon(20, 20, "slot"); // Increased to 20x20
             iconLabel.setIcon(checkIcon);
             textLabel.setText("Slot " + slot.getNumber());
             unparkButton.setEnabled(false);
             selectCheckBox.setEnabled(false);
             selectCheckBox.setSelected(false);
-            Logger.log("Slot " + slot.getNumber() + ": Set check.png (16x16), Text: Slot " + slot.getNumber());
+            Logger.log("Slot " + slot.getNumber() + ": Set check.png (20x20), Text: Slot " + slot.getNumber());
         }
         if (iconLabel.getIcon() != null) {
             Logger.log("Slot " + slot.getNumber() + ": Icon size - Width: " + iconLabel.getIcon().getIconWidth()
