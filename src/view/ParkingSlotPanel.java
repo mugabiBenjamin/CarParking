@@ -1,51 +1,124 @@
 package view;
 
+import controller.ParkingController;
 import model.ParkingSlot;
+import util.IconUtil;
+import util.MessageBox;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
 public class ParkingSlotPanel extends JPanel {
-    private final JButton button;
-    private final int slotNumber;
-    private static final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green
-    private static final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light Red
-    private static final Color TEXT_COLOR = Color.BLACK;
+    private final ParkingSlot slot;
+    private final ParkingController controller;
+    private final JLabel statusBar;
+    private JLabel slotLabel;
+    private JButton unparkButton;
+    private JCheckBox selectCheckBox;
+    private static final Color OCCUPIED_COLOR = new Color(255, 204, 204); // Light red
+    private static final Color EMPTY_COLOR = new Color(204, 255, 204); // Light green
 
-    public ParkingSlotPanel(ParkingSlot slot) {
-        this.slotNumber = slot.getNumber();
-        this.setLayout(new BorderLayout());
-
-        button = new JButton(slot.isOccupied() ? slot.getCar().toString() : "Empty");
-        button.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
-        button.setForeground(TEXT_COLOR);
-        button.setToolTipText("Slot " + slotNumber);
-        button.setFocusable(false);
-        button.setFocusPainted(false);
-        button.setOpaque(true); // Ensure background color is visible
-
-        button.setPreferredSize(new Dimension(180, 50)); // Increased size for padding
-        button.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedBorder(8, 1),
-                BorderFactory.createEmptyBorder(10, 15, 10, 15))); // Increased padding
-        button.setMargin(new Insets(10, 15, 10, 15)); // Added padding
-
-        this.add(button, BorderLayout.CENTER);
-        this.setOpaque(false);
+    public ParkingSlotPanel(ParkingSlot slot, ParkingController controller, JLabel statusBar) {
+        this.slot = slot;
+        this.controller = controller;
+        this.statusBar = statusBar;
+        setLayout(new BorderLayout(5, 5));
+        setBorder(new RoundedBorder(8, 1)); // Rounded border
+        initComponents();
+        updateSlot();
     }
 
-    public JButton getButton() {
-        return button;
+    private void initComponents() {
+        slotLabel = new JLabel("", SwingConstants.CENTER);
+        slotLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        slotLabel.setBorder(BorderFactory.createEmptyBorder());
+
+        unparkButton = new JButton(IconUtil.createUnparkIcon(16, 16));
+        unparkButton.setFocusPainted(false);
+        unparkButton.setContentAreaFilled(false);
+        unparkButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        unparkButton.setToolTipText("Unpark car from this slot");
+        unparkButton.addActionListener(e -> handleUnparkAction());
+        unparkButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (unparkButton.isEnabled()) {
+                    unparkButton.setBackground(unparkButton.getBackground().darker());
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                unparkButton.setBackground(UIManager.getColor("Panel.background"));
+            }
+        });
+
+        selectCheckBox = new JCheckBox();
+        selectCheckBox.setToolTipText("Select slot for batch unpark");
+        selectCheckBox.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
+
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.setOpaque(false);
+        topPanel.add(selectCheckBox, BorderLayout.WEST);
+        topPanel.add(unparkButton, BorderLayout.EAST);
+
+        add(topPanel, BorderLayout.NORTH);
+        add(slotLabel, BorderLayout.CENTER);
     }
 
-    public int getSlotNumber() {
-        return slotNumber;
+    public void updateSlot() {
+        if (slot.isOccupied()) {
+            setBackground(OCCUPIED_COLOR);
+            slotLabel.setIcon(IconUtil.createCarIcon(20, 12));
+            slotLabel.setText(slot.getCar().getPlateNumber());
+            unparkButton.setEnabled(true);
+            selectCheckBox.setEnabled(true);
+        } else {
+            setBackground(EMPTY_COLOR);
+            slotLabel.setIcon(IconUtil.createCheckIcon(20, 12, "slot"));
+            slotLabel.setText("Slot " + slot.getNumber());
+            unparkButton.setEnabled(false);
+            selectCheckBox.setEnabled(false);
+            selectCheckBox.setSelected(false);
+        }
+        revalidate();
+        repaint();
     }
 
-    public void update(ParkingSlot slot) {
-        button.setText(slot.isOccupied() ? slot.getCar().toString() : "Empty");
-        button.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
-        button.setOpaque(true);
-        button.repaint();
+    private void handleUnparkAction() {
+        if (slot.isOccupied()) {
+            String plate = slot.getCar().getPlateNumber();
+            controller.unparkCar(slot.getNumber());
+            updateSlot();
+            String message = "Car " + plate + " unparked from slot " + slot.getNumber();
+            MessageBox.showInfo(message);
+            statusBar.setText(message);
+        }
+    }
+
+    public boolean isSelected() {
+        return selectCheckBox.isSelected() && slot.isOccupied();
+    }
+
+    public void clearSelection() {
+        selectCheckBox.setSelected(false);
+    }
+
+    public ParkingSlot getSlot() {
+        return slot;
+    }
+
+    // For testing
+    public JLabel getSlotLabel() {
+        return slotLabel;
+    }
+
+    public JButton getUnparkButton() {
+        return unparkButton;
+    }
+
+    public JCheckBox getSelectCheckBox() {
+        return selectCheckBox;
     }
 }
