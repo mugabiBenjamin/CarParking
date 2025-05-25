@@ -1,12 +1,20 @@
 package model;
 
 public class ParkingSlot {
-    private int number;
-    private Car car; // null = free
+    private final int number;
+    private Car car;
 
     public ParkingSlot(int number) {
         this.number = number;
         this.car = null;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public Car getCar() {
+        return car;
     }
 
     public boolean isOccupied() {
@@ -14,18 +22,16 @@ public class ParkingSlot {
     }
 
     public void parkCar(Car car) {
+        if (isOccupied()) {
+            throw new IllegalStateException("Slot " + number + " is already occupied");
+        }
         this.car = car;
     }
 
-    public void removeCar() {
+    public void unparkCar() {
+        if (!isOccupied()) {
+            throw new IllegalStateException("Slot " + number + " is already empty");
+        }
         this.car = null;
-    }
-
-    public Car getCar() {
-        return car;
-    }
-
-    public int getNumber() {
-        return number;
     }
 }
