@@ -36,4 +36,8 @@ public class ParkingLot {
                 .filter(slot -> slot.isOccupied() && slot.getCar().getPlateNumber().equalsIgnoreCase(licensePlate))
                 .findFirst();
     }
+
+    public boolean isPlateAlreadyParked(String licensePlate) {
+        return findCarByPlate(licensePlate).isPresent();
+    }
 }
