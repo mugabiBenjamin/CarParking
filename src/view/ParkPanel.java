@@ -52,7 +52,6 @@ public class ParkPanel extends JPanel {
         plateInput.setEnabled(true);
         plateInput.setFocusable(true);
         plateInput.setRequestFocusEnabled(true);
-        // Debug: Log click events
         plateInput.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -139,7 +138,8 @@ public class ParkPanel extends JPanel {
                     plateInput.setBorder(new RoundedBorder(8, 1));
                     validationIcon.setIcon(null);
                     validationIcon.setToolTipText("License plate validation status");
-                    plateInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+                    plateInput.setToolTipText(
+                            "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
                 } else if (Validator.isValidPlate(text)) {
                     plateInput.setBorder(new RoundedBorder(8, 1));
                     validationIcon.setIcon(IconUtil.createCheckIcon(16, 16, "validation"));
@@ -205,7 +205,8 @@ public class ParkPanel extends JPanel {
             plateInput.setBorder(new RoundedBorder(8, 1));
             validationIcon.setIcon(null);
             validationIcon.setToolTipText("License plate validation status");
-            plateInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+            plateInput.setToolTipText(
+                    "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
             plateInput.requestFocusInWindow();
             return false;
         }
