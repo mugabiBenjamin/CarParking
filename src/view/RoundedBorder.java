@@ -5,8 +5,8 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class RoundedBorder implements Border {
-    private int radius;
-    private int thickness;
+    private final int radius;
+    private final int thickness;
 
     public RoundedBorder(int radius, int thickness) {
         this.radius = radius;
@@ -25,7 +25,7 @@ public class RoundedBorder implements Border {
 
     @Override
     public Insets getBorderInsets(Component c) {
-        return new Insets(radius / 2, radius / 2, radius / 2, radius / 2);
+        return new Insets(5, 10, 5, 10); // Match input field and button padding
     }
 
     @Override
