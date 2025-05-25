@@ -5,8 +5,10 @@ import model.ParkingLot;
 import model.ParkingSlot;
 import util.FileHelper;
 import util.Logger;
+import util.MessageBox;
 import view.ParkingView;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +37,18 @@ public class ParkingController {
 
     public void parkCar(String licensePlate) {
         try {
+            if (lot.isPlateAlreadyParked(licensePlate)) {
+                String message = "Car " + licensePlate + " is already parked in the system.";
+                Logger.warn(message);
+                JOptionPane.showMessageDialog(
+                        null,
+                        message,
+                        "Duplicate License Plate",
+                        JOptionPane.ERROR_MESSAGE);
+                view.updateStatusBar(message);
+                return;
+            }
+
             Optional<ParkingSlot> availableSlot = lot.getAvailableSlot();
             if (availableSlot.isPresent()) {
                 Car car = new Car(licensePlate);
@@ -43,6 +57,7 @@ public class ParkingController {
                 view.getSlotPanel().updateSlots();
                 String message = "Car " + licensePlate + " parked in slot " + availableSlot.get().getNumber();
                 Logger.log(message);
+                MessageBox.showInfo(message);
                 view.updateStatusBar(message);
             } else {
                 Logger.warn("No available slots for car " + licensePlate);
