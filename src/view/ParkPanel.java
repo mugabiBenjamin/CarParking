@@ -2,11 +2,12 @@ package view;
 
 import controller.ParkingController;
 import util.IconUtil;
+import util.Logger;
 import util.MessageBox;
 import util.Validator;
 
 import javax.swing.*;
-import javax.swing.border.Border; // Added import
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 import java.awt.*;
@@ -14,6 +15,7 @@ import java.awt.event.*;
 
 public class ParkPanel extends JPanel {
     private final ParkingController controller;
+    private final JLabel statusBar;
     private JTextField plateInput;
     private JLabel validationIcon;
     private JButton parkButton;
@@ -22,15 +24,16 @@ public class ParkPanel extends JPanel {
             BorderFactory.createLineBorder(Color.RED, 1),
             BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-    public ParkPanel(ParkingController controller) {
+    public ParkPanel(ParkingController controller, JLabel statusBar) {
         this.controller = controller;
+        this.statusBar = statusBar;
         setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(),
                 "Park a Car",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
                 new Font("SansSerif", Font.BOLD, 12)));
-        setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         initComponents();
     }
 
@@ -42,9 +45,23 @@ public class ParkPanel extends JPanel {
         plateInput = new JTextField(15);
         plateInput.setBorder(new RoundedBorder(8, 1));
         plateInput.setPreferredSize(new Dimension(200, 30));
+        plateInput.setMargin(new Insets(5, 10, 5, 10));
         plateInput.setText("Enter A123B");
         plateInput.setForeground(PLACEHOLDER_COLOR);
         plateInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+        plateInput.setEnabled(true);
+        plateInput.setFocusable(true);
+        plateInput.setRequestFocusEnabled(true);
+        // Debug: Log click events
+        plateInput.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Logger.log("ParkPanel: plateInput clicked at " + e.getPoint());
+                plateInput.requestFocusInWindow();
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+                plateInput.requestFocus();
+            }
+        });
         setupInputField();
 
         parkButton = new JButton("Park", IconUtil.createCarIcon(16, 16));
@@ -84,6 +101,7 @@ public class ParkPanel extends JPanel {
         plateInput.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
+                Logger.log("ParkPanel: plateInput gained focus");
                 if (plateInput.getText().equals("Enter A123B")) {
                     plateInput.setText("");
                     plateInput.setForeground(Color.BLACK);
@@ -92,12 +110,22 @@ public class ParkPanel extends JPanel {
 
             @Override
             public void focusLost(FocusEvent e) {
-                if (plateInput.getText().isEmpty()) {
+                Logger.log("ParkPanel: plateInput lost focus");
+                String text = plateInput.getText().trim();
+                if (text.isEmpty()) {
                     plateInput.setText("Enter A123B");
                     plateInput.setForeground(PLACEHOLDER_COLOR);
                     plateInput.setBorder(new RoundedBorder(8, 1));
-                    plateInput.setToolTipText(
-                            "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+                    validationIcon.setIcon(null);
+                    validationIcon.setToolTipText("License plate validation status");
+                } else if (!Validator.isValidPlate(text)) {
+                    plateInput.setBorder(ERROR_BORDER);
+                    validationIcon.setIcon(IconUtil.createXIcon(16, 16));
+                    validationIcon.setToolTipText(getValidationErrorMessage(text));
+                } else {
+                    plateInput.setBorder(new RoundedBorder(8, 1));
+                    validationIcon.setIcon(IconUtil.createCheckIcon(16, 16, "validation"));
+                    validationIcon.setToolTipText("Valid license plate");
                 }
             }
         });
@@ -107,21 +135,20 @@ public class ParkPanel extends JPanel {
             public void keyReleased(KeyEvent e) {
                 String text = plateInput.getText().trim();
                 String errorMessage = getValidationErrorMessage(text);
-                if (text.equals("Enter A123B") || text.isEmpty()) {
+                if (text.isEmpty() || text.equals("Enter A123B")) {
+                    plateInput.setBorder(new RoundedBorder(8, 1));
                     validationIcon.setIcon(null);
                     validationIcon.setToolTipText("License plate validation status");
-                    plateInput.setBorder(new RoundedBorder(8, 1));
-                    plateInput.setToolTipText(
-                            "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+                    plateInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
                 } else if (Validator.isValidPlate(text)) {
-                    validationIcon.setIcon(IconUtil.createCheckIcon(16, 16, "validation"));
-                    validationIcon.setToolTipText(errorMessage);
                     plateInput.setBorder(new RoundedBorder(8, 1));
-                    plateInput.setToolTipText(errorMessage);
+                    validationIcon.setIcon(IconUtil.createCheckIcon(16, 16, "validation"));
+                    validationIcon.setToolTipText("Valid license plate");
+                    plateInput.setToolTipText("Valid license plate");
                 } else {
+                    plateInput.setBorder(ERROR_BORDER);
                     validationIcon.setIcon(IconUtil.createXIcon(16, 16));
                     validationIcon.setToolTipText(errorMessage);
-                    plateInput.setBorder(ERROR_BORDER);
                     plateInput.setToolTipText(errorMessage);
                 }
             }
@@ -163,6 +190,7 @@ public class ParkPanel extends JPanel {
     private void handleParkAction() {
         String plateText = plateInput.getText().equals("Enter A123B") ? "" : plateInput.getText().trim();
         if (!validateInput(plateText)) {
+            statusBar.setText("Parking failed: Invalid input");
             return;
         }
         controller.parkCar(plateText);
@@ -177,8 +205,7 @@ public class ParkPanel extends JPanel {
             plateInput.setBorder(new RoundedBorder(8, 1));
             validationIcon.setIcon(null);
             validationIcon.setToolTipText("License plate validation status");
-            plateInput.setToolTipText(
-                    "Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
+            plateInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
             plateInput.requestFocusInWindow();
             return false;
         }
@@ -195,8 +222,8 @@ public class ParkPanel extends JPanel {
     private void resetInputField() {
         plateInput.setText("Enter A123B");
         plateInput.setForeground(PLACEHOLDER_COLOR);
-        validationIcon.setIcon(null);
         plateInput.setBorder(new RoundedBorder(8, 1));
+        validationIcon.setIcon(null);
         validationIcon.setToolTipText("License plate validation status");
         plateInput.setToolTipText("Enter a valid license plate (e.g., UAA 123B, UG 123B, or personalized like ABC123)");
     }
