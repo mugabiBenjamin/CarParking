@@ -13,4 +13,8 @@ public class Logger {
     public static void error(String message) {
         System.err.println("[" + LocalDateTime.now().format(formatter) + "] ERROR: " + message);
     }
+
+    public static void warn(String message) {
+        System.out.println("[" + LocalDateTime.now().format(formatter) + "] WARN: " + message);
+    }
 }

@@ -20,6 +20,7 @@ public class ParkingView extends JFrame {
     private SlotPanel slotPanel;
     private ParkPanel parkPanel;
     private SearchPanel searchPanel;
+    private BatchPanel batchPanel;
     private final Timer statusBarTimer;
 
     public ParkingView() {
@@ -79,6 +80,7 @@ public class ParkingView extends JFrame {
 
         parkPanel = new ParkPanel(controller, statusBar);
         searchPanel = new SearchPanel(controller, slotPanel, statusBar);
+        batchPanel = new BatchPanel(controller, slotPanel, statusBar);
         HelpPanel helpPanel = new HelpPanel(statusBar);
 
         JPanel controlPanel = new JPanel();
@@ -88,6 +90,9 @@ public class ParkingView extends JFrame {
         controlPanel.add(parkPanel);
         controlPanel.add(Box.createVerticalStrut(10));
         controlPanel.add(searchPanel);
+        controlPanel.add(Box.createVerticalStrut(10));
+        controlPanel.add(batchPanel);
+        controlPanel.add(Box.createVerticalStrut(10));
         controlPanel.add(helpPanel);
 
         add(controlPanel, BorderLayout.NORTH);
@@ -168,5 +173,9 @@ public class ParkingView extends JFrame {
 
     public SearchPanel getSearchPanel() {
         return searchPanel;
+    }
+
+    public BatchPanel getBatchPanel() {
+        return batchPanel;
     }
 }
