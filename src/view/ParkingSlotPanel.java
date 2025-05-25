@@ -88,12 +88,23 @@ public class ParkingSlotPanel extends JPanel {
 
     private void handleUnparkAction() {
         if (slot.isOccupied()) {
-            String plate = slot.getCar().getPlateNumber();
-            controller.unparkCar(slot.getNumber());
-            updateSlot();
-            String message = "Car " + plate + " unparked from slot " + slot.getNumber();
-            MessageBox.showInfo(message);
-            statusBar.setText(message);
+            String licensePlate = slot.getCar().getPlateNumber();
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to unpark car " + licensePlate
+                            + " from this spot? This action is irreversible.",
+                    "Confirm Unparking",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                controller.unparkCar(slot.getNumber());
+                updateSlot();
+                String message = "Car " + licensePlate + " unparked from slot " + slot.getNumber();
+                MessageBox.showInfo(message);
+                statusBar.setText(message);
+            } else {
+                statusBar.setText("Unpark cancelled for car " + licensePlate);
+            }
         }
     }
 
