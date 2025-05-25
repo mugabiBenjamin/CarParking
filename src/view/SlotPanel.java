@@ -8,7 +8,7 @@ import util.MessageBox;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter; // Added import
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class SlotPanel extends JPanel {
@@ -16,15 +16,16 @@ public class SlotPanel extends JPanel {
     private final ParkingLot lot;
     private final JLabel statusBar;
     private volatile boolean isDialogOpen = false;
-    private static final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144);
-    private static final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193);
+    private static final Color EMPTY_SLOT_COLOR = new Color(144, 238, 144); // Light Green
+    private static final Color OCCUPIED_SLOT_COLOR = new Color(255, 182, 193); // Light Red
     private static final Color TEXT_COLOR = Color.WHITE;
 
     public SlotPanel(ParkingController controller, ParkingLot lot, JLabel statusBar) {
         this.controller = controller;
         this.lot = lot;
         this.statusBar = statusBar;
-        setLayout(new GridLayout(2, 5, 5, 5));
+        setLayout(new GridLayout(2, 5, 10, 10)); // Increased spacing
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Added padding
         updateSlots();
     }
 
@@ -72,7 +73,8 @@ public class SlotPanel extends JPanel {
         btn.setBorder(new RoundedBorder(8, 1));
         btn.setFocusPainted(false);
         btn.setContentAreaFilled(true);
-        btn.setMargin(new Insets(5, 10, 5, 10));
+        btn.setMargin(new Insets(10, 15, 10, 15)); // Added padding
+        btn.setOpaque(true); // Ensure background color is visible
     }
 
     private void setupSlotButtonListeners(JButton btn, ParkingSlot slot) {
@@ -119,9 +121,6 @@ public class SlotPanel extends JPanel {
             if (confirm == JOptionPane.YES_OPTION) {
                 System.out.println("Unparking car from slot " + slotNumber);
                 controller.unparkCar(slotNumber);
-                statusBar.setText("Removed car with license plate " + plateNumber + " from slot " + slotNumber);
-                clearStatusBar();
-                updateSlots();
             }
         } catch (Exception ex) {
             System.err.println("Error during unpark: " + ex.getMessage());
@@ -144,9 +143,13 @@ public class SlotPanel extends JPanel {
                 ParkingSlot slot = lot.getSlots().get(slotNumber - 1);
                 btn.setBackground(Color.BLUE);
                 btn.setForeground(Color.WHITE);
+                btn.setOpaque(true);
+                btn.repaint();
                 Timer timer = new Timer(2000, e -> {
                     btn.setBackground(slot.isOccupied() ? OCCUPIED_SLOT_COLOR : EMPTY_SLOT_COLOR);
                     btn.setForeground(slot.isOccupied() ? Color.BLACK : TEXT_COLOR);
+                    btn.setOpaque(true);
+                    btn.repaint();
                 });
                 timer.setRepeats(false);
                 timer.start();
