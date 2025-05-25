@@ -1,119 +1,125 @@
 package controller;
 
-import model.*;
+import model.Car;
+import model.ParkingLot;
+import model.ParkingSlot;
+import util.FileHelper;
 import util.Logger;
 import util.MessageBox;
 import util.Validator;
+import view.ParkingView;
 
-import java.io.IOException;
 import java.util.Optional;
 
 public class ParkingController {
-    private ParkingLot lot;
+    private final ParkingLot lot;
+    private final FileHelper fileHelper;
+    private final ParkingView view;
 
-    public ParkingController(ParkingLot lot) {
+    public ParkingController(ParkingLot lot, ParkingView view) {
         this.lot = lot;
-        // Initialize data folder
-        FileHelper.ensureDataFolderExists();
-
-        // Load existing parking data on startup
-        loadParkingData();
+        this.view = view;
+        this.fileHelper = new FileHelper("data/parking_lot.txt"); // Fixed file path
     }
 
-    public void parkCar(String plate) {
-        // Validate license plate input and provide standardized, actionable error
-        // messages
-        if (plate.isBlank()) {
-            MessageBox.showError("Parking failed for license plate: Enter a valid license plate (e.g., AAA 123B).");
-            return;
-        }
-
-        if (!Validator.isValidPlate(plate)) {
-            MessageBox.showError("Parking failed for license plate " + plate + ": Invalid format, use AAA 123B.");
-            return;
-        }
-
-        // Check if car is already parked
-        Optional<ParkingSlot> existingCar = findCarByPlate(plate);
-        if (existingCar.isPresent()) {
-            MessageBox.showError("Car with license plate " + plate + " is already parked in slot " +
-                    existingCar.get().getNumber() + ". Search to locate it.");
-            return;
-        }
-
-        var car = new Car(plate);
-        var slotOpt = lot.findFirstFreeSlot();
-
-        if (slotOpt.isPresent()) {
-            slotOpt.get().parkCar(car);
-            Logger.log("Car parked: " + plate);
-            try {
-                FileHelper.saveSlotData(lot.getSlots());
-                MessageBox.showInfo("Car with license plate " + plate + " parked in slot " + slotOpt.get().getNumber());
-            } catch (IOException e) {
-                MessageBox.showError("Failed to save parking data for license plate " + plate,
-                        "Ensure the data file is writable and there is sufficient disk space.",
-                        "Try parking again or check file permissions.");
-                slotOpt.get().removeCar(); // Rollback parking
-                Logger.log("Rolled back parking for " + plate + " due to save failure");
+    public void parkCar(String plateNumber) {
+        try {
+            if (!Validator.isValidPlate(plateNumber)) {
+                MessageBox.showError("Parking failed: Invalid license plate format for " + plateNumber,
+                        "Ensure the plate follows one of the valid formats.",
+                        "Examples: UAA 123B (normal), UG 123B (government), ABC123 (personalized).");
+                view.updateStatusBar("Parking failed: Invalid plate format");
+                return;
             }
-        } else {
-            MessageBox.showError("Parking failed: No available slots.");
+
+            Optional<ParkingSlot> existingSlot = findCarByPlate(plateNumber);
+            if (existingSlot.isPresent()) {
+                ParkingSlot slot = existingSlot.get();
+                MessageBox.showError(
+                        "Parking failed: Car with license plate " + plateNumber + " is already parked in slot "
+                                + slot.getNumber(),
+                        "A car with this license plate is already parked.",
+                        "Search for the car to locate it or use a different license plate.");
+                view.updateStatusBar("Parking failed: Car already parked");
+                return;
+            }
+
+            Optional<ParkingSlot> availableSlot = lot.getAvailableSlot(); // Removed redundant cast
+            if (!availableSlot.isPresent()) {
+                MessageBox.showError("Parking failed: No available slots.",
+                        "All parking slots are currently occupied.",
+                        "Try removing a car from an occupied slot to free up space.");
+                view.updateStatusBar("Parking failed: No slots available");
+                return;
+            }
+
+            Car car = new Car(plateNumber);
+            availableSlot.get().parkCar(car);
+            fileHelper.save(lot);
+            Logger.log("Car parked: " + plateNumber + " in slot " + availableSlot.get().getNumber());
+            MessageBox.showInfo("Car with license plate " + plateNumber + " parked successfully in slot "
+                    + availableSlot.get().getNumber());
+            view.getSlotPanel().updateSlots();
+            view.updateStatusBar("Parked " + plateNumber + " in slot " + availableSlot.get().getNumber());
+        } catch (Exception e) {
+            Logger.error("Error parking car: " + e.getMessage());
+            MessageBox.showError("Failed to park car: " + e.getMessage(),
+                    "An error occurred while parking the car.",
+                    "Please try again or contact support if the issue persists.");
+            view.updateStatusBar("Parking failed: Error");
         }
     }
 
     public void unparkCar(int slotNumber) {
-        var slot = lot.getSlots().get(slotNumber - 1);
-        if (slot.isOccupied()) {
-            String plate = slot.getCar().getPlateNumber();
-            slot.removeCar();
-            try {
-                FileHelper.saveSlotData(lot.getSlots());
-                Logger.log("Car removed: " + plate);
-                MessageBox.showInfo("Car with license plate " + plate + " removed from slot " + slotNumber);
-            } catch (IOException e) {
-                MessageBox.showError("Failed to save parking data after removing car from slot " + slotNumber,
-                        "Ensure the data file is writable and there is sufficient disk space.",
-                        "The car has been removed, but the data may not be saved.");
-                Logger.log("Failed to save data after unparking " + plate);
+        try {
+            Optional<ParkingSlot> slotOptional = lot.getSlot(slotNumber - 1);
+            if (!slotOptional.isPresent() || !slotOptional.get().isOccupied()) {
+                MessageBox.showError("Unparking failed: No car in slot " + slotNumber,
+                        "The selected slot is empty or invalid.",
+                        "Please select an occupied slot (light red with a car icon).");
+                view.updateStatusBar("Unpark failed: Slot empty");
+                return;
             }
-        } else {
-            MessageBox.showError("Unparking failed for slot " + slotNumber + ": Slot is already empty.");
+
+            ParkingSlot slot = slotOptional.get();
+            String plateNumber = slot.getCar().getPlateNumber();
+            slot.removeCar();
+            fileHelper.save(lot);
+            Logger.log("Car unparked: " + plateNumber + " from slot " + slotNumber);
+            MessageBox.showInfo(
+                    "Car with license plate " + plateNumber + " successfully unparked from slot " + slotNumber);
+            view.getSlotPanel().updateSlots();
+            view.updateStatusBar("Unparked " + plateNumber + " from slot " + slotNumber);
+        } catch (Exception e) {
+            Logger.error("Error unparking car from slot " + slotNumber + ": " + e.getMessage());
+            MessageBox.showError("Failed to unpark car from slot " + slotNumber + ": " + e.getMessage(),
+                    "An error occurred while unparking the car.",
+                    "Please try again or contact support if the issue persists.");
+            view.updateStatusBar("Unpark failed: Error");
         }
     }
 
-    // Find a car by its license plate
-    public Optional<ParkingSlot> findCarByPlate(String plate) {
-        return lot.getSlots().stream()
-                .filter(slot -> slot.isOccupied() &&
-                        slot.getCar().getPlateNumber().equalsIgnoreCase(plate))
+    public Optional<ParkingSlot> findCarByPlate(String plateNumber) {
+        Optional<ParkingSlot> foundSlot = lot.getSlots().stream()
+                .filter(s -> s.isOccupied() && s.getCar().getPlateNumber().equalsIgnoreCase(plateNumber))
                 .findFirst();
+        if (foundSlot.isPresent()) {
+            view.updateStatusBar("Found car with plate " + plateNumber + " in slot " + foundSlot.get().getNumber());
+        }
+        return foundSlot;
     }
 
-    private void loadParkingData() {
+    public void loadParkingData() {
         try {
-            var slotData = FileHelper.loadSlotData();
-            for (String data : slotData) {
-                String[] parts = data.split(",");
-                if (parts.length == 2) {
-                    try {
-                        int slotNumber = Integer.parseInt(parts[0]);
-                        String plateNumber = parts[1];
-                        if (slotNumber > 0 && slotNumber <= lot.getSlots().size() && !plateNumber.equals("EMPTY")) {
-                            ParkingSlot slot = lot.getSlots().get(slotNumber - 1);
-                            slot.parkCar(new Car(plateNumber));
-                            Logger.log("Loaded car: " + plateNumber + " in slot " + slotNumber);
-                        }
-                    } catch (NumberFormatException e) {
-                        Logger.log("Error parsing slot data: " + data);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            MessageBox.showError("Failed to load parking data",
-                    "Ensure the data file exists and is readable.",
+            fileHelper.loadFromFile(lot);
+            view.getSlotPanel().updateSlots();
+            view.updateStatusBar("Parking data loaded successfully");
+        } catch (Exception e) {
+            Logger.error("Error loading parking data: " + e.getMessage());
+            MessageBox.showError("Failed to load parking data: " + e.getMessage(),
+                    "Could not load existing parking data.",
                     "The system will start with an empty parking lot.");
-            Logger.log("Failed to load parking data: " + e.getMessage());
+            view.updateStatusBar("Failed to load parking data");
         }
     }
 }
