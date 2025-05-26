@@ -9,17 +9,11 @@ public class ParkingSlot {
         this.car = null;
     }
 
-    public void parkCar(Car car) {
-        if (isOccupied()) {
-            throw new IllegalStateException("Slot " + number + " is already occupied");
-        }
+    public void park(Car car) {
         this.car = car;
     }
 
-    public void unparkCar() {
-        if (!isOccupied()) {
-            return; // Silently return if slot is already empty
-        }
+    public void unpark() {
         this.car = null;
     }
 
