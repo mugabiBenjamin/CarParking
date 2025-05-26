@@ -14,6 +14,7 @@ public class ParkingController {
     private final ParkingLot lot;
     private final FileHelper fileHelper;
     private final ParkingListener listener;
+    private static final String REPORT_FILE_PATH = "src/data/parking_lot_report.csv";
 
     public ParkingController(ParkingLot lot, ParkingListener listener) {
         this.lot = lot;
@@ -112,11 +113,12 @@ public class ParkingController {
     public void generateReport() {
         try {
             fileHelper.generateReport(lot);
-            listener.onStatusUpdate("Report generated successfully");
-            Logger.log("Parking lot report generated");
+            String message = "Report generated successfully at: " + REPORT_FILE_PATH;
+            listener.onReportResult(new ReportResult(true, message, REPORT_FILE_PATH));
+            Logger.log("Parking lot report generated at: " + REPORT_FILE_PATH);
         } catch (IOException e) {
             String message = "Failed to generate report: " + e.getMessage();
-            listener.onStatusUpdate(message);
+            listener.onReportResult(new ReportResult(false, message, REPORT_FILE_PATH));
             Logger.error("Failed to generate report: " + e.getMessage());
         }
     }
