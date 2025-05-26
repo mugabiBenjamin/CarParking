@@ -30,14 +30,14 @@ public class ParkingView extends JFrame implements ParkingListener {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Add Help Menu
+        // Add Online Help Menu
         JMenuBar menuBar = new JMenuBar();
-        JMenu helpMenu = new JMenu("Help");
+        JMenu helpMenu = new JMenu("Online Help");
         helpMenu.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         JMenuItem visitGithubItem = new JMenuItem("Visit GitHub Repository");
         visitGithubItem.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        visitGithubItem.setToolTipText("Open the GitHub repository in your browser");
+        visitGithubItem.setToolTipText("Open the GitHub repository in your browser for online help");
         visitGithubItem.addActionListener(e -> openGitHubRepository());
         helpMenu.add(visitGithubItem);
         menuBar.add(helpMenu);
@@ -182,7 +182,7 @@ public class ParkingView extends JFrame implements ParkingListener {
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 try {
                     desktop.browse(new URI(url));
-                    updateStatusBar("Opened GitHub repository");
+                    updateStatusBar("Opened GitHub repository for online help");
                     opened = true;
                 } catch (Exception ex) {
                     System.err.println("Desktop.browse failed: " + ex.getMessage());
@@ -203,7 +203,7 @@ public class ParkingView extends JFrame implements ParkingListener {
                     throw new UnsupportedOperationException("Unsupported OS");
                 }
                 Runtime.getRuntime().exec(command);
-                updateStatusBar("Opened GitHub repository");
+                updateStatusBar("Opened GitHub repository for online help");
                 opened = true;
             } catch (Exception ex) {
                 System.err.println("Command execution failed: " + ex.getMessage());
@@ -220,8 +220,8 @@ public class ParkingView extends JFrame implements ParkingListener {
             });
             panel.add(label, BorderLayout.CENTER);
             panel.add(copyButton, BorderLayout.SOUTH);
-            JOptionPane.showMessageDialog(this, panel, "Open GitHub Manually", JOptionPane.INFORMATION_MESSAGE);
-            updateStatusBar("Displayed GitHub URL");
+            JOptionPane.showMessageDialog(this, panel, "Open Online Help Manually", JOptionPane.INFORMATION_MESSAGE);
+            updateStatusBar("Displayed online help URL");
         }
     }
 
