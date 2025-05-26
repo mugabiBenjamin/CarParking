@@ -1,6 +1,8 @@
 package view;
 
-import controller.*;
+import controller.ParkingController;
+import controller.ParkingListener;
+import controller.Result;
 import model.ParkingLot;
 import util.Logger;
 import util.MessageBox;
@@ -25,13 +27,18 @@ public class ParkingView extends JFrame implements ParkingListener {
     private final Timer statusBarTimer;
 
     public ParkingView() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        } catch (Exception e) {
+            Logger.log("Failed to set cross-platform look and feel: " + e.getMessage());
+        }
+
         setTitle("Car Parking System");
         setSize(600, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        setLocationRelativeTo(null); // Center the window on the screen
+        setLocationRelativeTo(null);
 
-        // Add Online Help Menu
         JMenuBar menuBar = new JMenuBar();
         JMenu helpMenu = new JMenu("Online Help");
         helpMenu.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -44,7 +51,6 @@ public class ParkingView extends JFrame implements ParkingListener {
         menuBar.add(helpMenu);
         setJMenuBar(menuBar);
 
-        // Set window icon
         try {
             InputStream iconStream = getClass().getResourceAsStream("/resources/icons/car.png");
             if (iconStream != null) {
@@ -63,7 +69,6 @@ public class ParkingView extends JFrame implements ParkingListener {
         this.statusBarTimer.setRepeats(false);
 
         initUI();
-        // Set initial focus to ParkPanel's plateInput
         if (parkPanel != null && parkPanel.getPlateInput() != null) {
             boolean focused = parkPanel.getPlateInput().requestFocusInWindow();
             Logger.log("ParkingView: Requested focus for ParkPanel plateInput, success=" + focused);
@@ -105,9 +110,9 @@ public class ParkingView extends JFrame implements ParkingListener {
     }
 
     @Override
-    public void onParkResult(ParkResult result) {
+    public void onParkResult(Result result) {
+        slotPanel.updateSlots(); // Ensure UI updates even on failure
         if (result.isSuccess()) {
-            slotPanel.updateSlots();
             MessageBox.showInfo(result.getMessage());
         } else {
             MessageBox.showError(result.getMessage(), "Check the license plate format or availability.");
@@ -116,26 +121,26 @@ public class ParkingView extends JFrame implements ParkingListener {
     }
 
     @Override
-    public void onUnparkResult(UnparkResult result) {
+    public void onUnparkResult(Result result) {
+        slotPanel.updateSlots(); // Ensure UI updates
         if (result.isSuccess()) {
-            slotPanel.updateSlots();
             MessageBox.showInfo(result.getMessage());
         }
         updateStatusBar(result.getMessage());
     }
 
     @Override
-    public void onBatchUnparkResult(BatchUnparkResult result) {
+    public void onBatchUnparkResult(Result result) {
+        slotPanel.updateSlots(); // Ensure UI updates
         if (result.getUnparkedCount() > 0) {
-            slotPanel.updateSlots();
             MessageBox.showInfo(result.getMessage());
         }
         updateStatusBar(result.getMessage());
     }
 
     @Override
-    public void onFindCarResult(FindCarResult result) {
-        if (result.isFound()) {
+    public void onFindCarResult(Result result) {
+        if (result.getSlot() != null) {
             slotPanel.highlightSlot(result.getSlot().getNumber());
             MessageBox.showInfo(result.getMessage());
         } else {
@@ -145,7 +150,7 @@ public class ParkingView extends JFrame implements ParkingListener {
     }
 
     @Override
-    public void onReportResult(ReportResult result) {
+    public void onReportResult(Result result) {
         if (result.isSuccess()) {
             MessageBox.showInfo(result.getMessage());
         } else {
@@ -155,9 +160,9 @@ public class ParkingView extends JFrame implements ParkingListener {
     }
 
     @Override
-    public void onLoadDataResult(LoadDataResult result) {
+    public void onLoadDataResult(Result result) {
+        slotPanel.updateSlots(); // Ensure UI updates on load
         if (result.isSuccess()) {
-            slotPanel.updateSlots();
             Logger.log("ParkingView: Updated slots after loading data");
         } else {
             MessageBox.showError(result.getMessage(), "Using empty parking lot. Check parking_lot.txt format.");
@@ -177,56 +182,29 @@ public class ParkingView extends JFrame implements ParkingListener {
 
     private void openGitHubRepository() {
         String url = "https://github.com/mugabiBenjamin/CarParking.git";
-        boolean opened = false;
-        if (Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                try {
-                    desktop.browse(new URI(url));
-                    updateStatusBar("Opened GitHub repository for online help");
-                    opened = true;
-                } catch (Exception ex) {
-                    System.err.println("Desktop.browse failed: " + ex.getMessage());
-                }
-            }
-        }
-        if (!opened) {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
-                String os = System.getProperty("os.name").toLowerCase();
-                String command;
-                if (os.contains("linux")) {
-                    command = "xdg-open " + url;
-                } else if (os.contains("mac")) {
-                    command = "open " + url;
-                } else if (os.contains("win")) {
-                    command = "start " + url;
-                } else {
-                    throw new UnsupportedOperationException("Unsupported OS");
-                }
-                Runtime.getRuntime().exec(command);
+                Desktop.getDesktop().browse(new URI(url));
                 updateStatusBar("Opened GitHub repository for online help");
-                opened = true;
+                return;
             } catch (Exception ex) {
-                System.err.println("Command execution failed: " + ex.getMessage());
+                Logger.log("Failed to open browser: " + ex.getMessage());
             }
         }
-        if (!opened) {
-            JPanel panel = new JPanel(new BorderLayout());
-            JLabel label = new JLabel("<html>Could not open browser. Please visit:<br>" + url + "</html>");
-            JButton copyButton = new JButton("Copy URL to Clipboard");
-            copyButton.addActionListener(e2 -> {
-                Toolkit.getDefaultToolkit().getSystemClipboard()
-                        .setContents(new StringSelection(url), null);
-                updateStatusBar("GitHub URL copied to clipboard");
-            });
-            panel.add(label, BorderLayout.CENTER);
-            panel.add(copyButton, BorderLayout.SOUTH);
-            JOptionPane.showMessageDialog(this, panel, "Open Online Help Manually", JOptionPane.INFORMATION_MESSAGE);
-            updateStatusBar("Displayed online help URL");
-        }
+        JPanel panel = new JPanel(new BorderLayout());
+        JLabel label = new JLabel("<html>Could not open browser. Please visit:<br>" + url + "</html>");
+        JButton copyButton = new JButton("Copy URL to Clipboard");
+        copyButton.addActionListener(e -> {
+            Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new StringSelection(url), null);
+            updateStatusBar("GitHub URL copied to clipboard");
+        });
+        panel.add(label, BorderLayout.CENTER);
+        panel.add(copyButton, BorderLayout.SOUTH);
+        JOptionPane.showMessageDialog(this, panel, "Open Online Help Manually", JOptionPane.INFORMATION_MESSAGE);
+        updateStatusBar("Displayed online help URL");
     }
 
-    // For testing
     public SlotPanel getSlotPanel() {
         return slotPanel;
     }
