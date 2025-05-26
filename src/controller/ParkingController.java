@@ -25,10 +25,13 @@ public class ParkingController {
     public void loadParkingData() {
         try {
             fileHelper.loadFromFile(lot);
-            listener.onStatusUpdate("Parking data loaded successfully");
-            Logger.log("Parking data loaded successfully");
+            String message = "Parking data loaded successfully";
+            listener.onLoadDataResult(new LoadDataResult(true, message));
+            listener.onStatusUpdate(message);
+            Logger.log(message);
         } catch (IOException e) {
             String message = "Error loading parking data: " + e.getMessage();
+            listener.onLoadDataResult(new LoadDataResult(false, message));
             listener.onStatusUpdate(message);
             Logger.error("Failed to load parking data: " + e.getMessage());
         }
