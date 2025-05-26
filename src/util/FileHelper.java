@@ -1,181 +1,125 @@
 package util;
 
-import model.Car;
-import model.ParkingLot;
 import model.ParkingSlot;
+import model.Car;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FileHelper {
-    private final String filePath;
-    private static final Pattern LINE_PATTERN = Pattern.compile("^\\((\\d+),\\s*([A-Z0-9\\s]{1,8}|EMPTY)\\)$");
-    private static final String BASE_PATH = "data/";
+    private static final Pattern LINE_PATTERN = Pattern.compile("\\((\\d+),\\s*(.*?)\\)");
+    private static final Path DATA_DIR = Paths.get("data");
+    private static final Path PARKING_LOT_FILE = DATA_DIR.resolve("parking_lot.txt");
+    private static final Path REPORT_FILE = DATA_DIR.resolve("parking_lot_report.csv");
 
-    public FileHelper(String fileName) {
-        this.filePath = BASE_PATH + fileName;
-    }
-
-    public void loadFromFile(ParkingLot lot) throws IOException {
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
-        List<String> lines = new ArrayList<>();
-
-        // Ensure parent directory exists
-        if (parentDir != null && !parentDir.exists()) {
-            if (!parentDir.mkdirs()) {
-                throw new IOException("Failed to create directory: " + parentDir.getPath());
-            }
-            Logger.log("FileHelper: Created directory " + parentDir.getPath());
-        }
-
-        // Read file if it exists
-        if (file.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    lines.add(line.trim());
-                }
-            } catch (IOException e) {
-                Logger.error("FileHelper: Failed to read file: " + e.getMessage());
-                throw new IOException("Unable to read parking_lot.txt: " + e.getMessage());
-            }
-        } else {
-            // Initialize empty slots and create new file
-            initializeEmptySlots(lot);
-            save(lot);
-            Logger.log("FileHelper: Created new parking_lot.txt with empty slots at " + filePath);
-            return;
-        }
-
-        // Validate file content
+    public static List<ParkingSlot> readParkingLotFile(int size) {
+        List<ParkingSlot> slots = new ArrayList<>();
         try {
-            validateFileContent(lines, lot.getSlots().size());
-        } catch (IOException e) {
-            Logger.error("FileHelper: Validation failed: " + e.getMessage());
-            initializeEmptySlots(lot);
-            save(lot);
-            throw new IOException("Invalid file format: " + e.getMessage());
-        }
+            Files.createDirectories(DATA_DIR);
+            if (!Files.exists(PARKING_LOT_FILE)) {
+                Logger.log("File not found: " + PARKING_LOT_FILE + ". Creating new file.");
+                Files.createFile(PARKING_LOT_FILE);
+                return initializeEmptySlots(size);
+            }
 
-        // Load valid data
-        for (String line : lines) {
-            Matcher matcher = LINE_PATTERN.matcher(line);
-            if (matcher.matches()) {
-                int slotNumber = Integer.parseInt(matcher.group(1)) - 1;
-                String content = matcher.group(2).trim();
-                ParkingSlot slot = lot.getSlot(slotNumber)
-                        .orElseThrow(() -> new IOException("Invalid slot number in file: " + (slotNumber + 1)));
-                if (!content.equals("EMPTY")) {
-                    slot.parkCar(new Car(content));
-                    Logger.log("FileHelper: Loaded slot " + (slotNumber + 1) + " with plate " + content);
-                } else {
-                    slot.unparkCar();
-                    Logger.log("FileHelper: Loaded slot " + (slotNumber + 1) + " as EMPTY");
+            List<String> lines = Files.readAllLines(PARKING_LOT_FILE);
+            if (lines.size() != size) {
+                Logger.log("Invalid line count in " + PARKING_LOT_FILE + ": " + lines.size() + ". Expected: " + size);
+                return initializeEmptySlots(size);
+            }
+
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i).trim();
+                if (line.isEmpty()) {
+                    Logger.log("Empty line at index " + i + " in " + PARKING_LOT_FILE);
+                    return initializeEmptySlots(size);
                 }
+                Matcher matcher = LINE_PATTERN.matcher(line);
+                if (!matcher.matches()) {
+                    Logger.log("Invalid line format at index " + i + " in " + PARKING_LOT_FILE + ": " + line);
+                    return initializeEmptySlots(size);
+                }
+                int slotNumber;
+                try {
+                    slotNumber = Integer.parseInt(matcher.group(1));
+                } catch (NumberFormatException e) {
+                    Logger.log(
+                            "Invalid slot number at index " + i + " in " + PARKING_LOT_FILE + ": " + matcher.group(1));
+                    return initializeEmptySlots(size);
+                }
+                String content = matcher.group(2).trim();
+                if (slotNumber < 1 || slotNumber > size) {
+                    Logger.log(
+                            "Slot number out of range at index " + i + " in " + PARKING_LOT_FILE + ": " + slotNumber);
+                    return initializeEmptySlots(size);
+                }
+                ParkingSlot slot = new ParkingSlot(slotNumber);
+                if (!content.equals("EMPTY")) {
+                    if (Validator.isValidPlate(content)) {
+                        slot.park(new Car(content));
+                    } else {
+                        Logger.log("Invalid license plate at index " + i + " in " + PARKING_LOT_FILE + ": " + content);
+                        return initializeEmptySlots(size);
+                    }
+                }
+                slots.add(slot);
             }
-        }
-        Logger.log("FileHelper: Successfully loaded " + lines.size() + " slots from " + filePath);
-    }
-
-    private void validateFileContent(List<String> lines, int slotCount) throws IOException {
-        if (lines.isEmpty()) {
-            throw new IOException("File is empty");
-        }
-        if (lines.size() != slotCount) {
-            throw new IOException("Invalid line count: expected " + slotCount + ", found " + lines.size());
-        }
-
-        Set<Integer> slotNumbers = new HashSet<>();
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            Matcher matcher = LINE_PATTERN.matcher(line);
-            if (!matcher.matches()) {
-                throw new IOException("Invalid format at line " + (i + 1) + ": " + line);
-            }
-
-            int slotNumber = Integer.parseInt(matcher.group(1));
-            String content = matcher.group(2).trim();
-
-            // Validate slot number
-            if (slotNumber < 1 || slotNumber > slotCount) {
-                throw new IOException("Invalid slot number at line " + (i + 1) + ": " + slotNumber);
-            }
-            if (!slotNumbers.add(slotNumber)) {
-                throw new IOException("Duplicate slot number at line " + (i + 1) + ": " + slotNumber);
-            }
-
-            // Validate license plate
-            if (!content.equals("EMPTY") && !Validator.isValidPlate(content)) {
-                throw new IOException("Invalid license plate at line " + (i + 1) + ": " + content);
-            }
-        }
-        Logger.log("FileHelper: Validated " + lines.size() + " lines in " + filePath);
-    }
-
-    private void initializeEmptySlots(ParkingLot lot) {
-        int clearedCount = 0;
-        for (ParkingSlot slot : lot.getSlots()) {
-            if (slot.isOccupied()) {
-                slot.unparkCar();
-                clearedCount++;
-            }
-        }
-        Logger.log("FileHelper: Initialized " + lot.getSlots().size() + " slots, cleared " + clearedCount
-                + " occupied slots");
-    }
-
-    public void save(ParkingLot lot) throws IOException {
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
-        if (parentDir != null && !parentDir.exists()) {
-            if (!parentDir.mkdirs()) {
-                throw new IOException("Failed to create directory: " + parentDir.getPath());
-            }
-            Logger.log("FileHelper: Created directory " + parentDir.getPath());
-        }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            for (ParkingSlot slot : lot.getSlots()) {
-                String content = slot.isOccupied() ? slot.getCar().getPlateNumber() : "EMPTY";
-                writer.write(String.format("(%d, %s)%n", slot.getNumber(), content));
-            }
+            Logger.log("Successfully read " + slots.size() + " slots from " + PARKING_LOT_FILE);
         } catch (IOException e) {
-            Logger.error("FileHelper: Failed to save file: " + e.getMessage());
-            throw new IOException("Unable to save parking_lot.txt: " + e.getMessage());
+            Logger.log("Error reading " + PARKING_LOT_FILE + ": " + e.getMessage());
+            slots = initializeEmptySlots(size);
         }
-        Logger.log("FileHelper: Saved " + lot.getSlots().size() + " slots to " + filePath);
+        return slots;
     }
 
-    public void generateReport(ParkingLot lot) throws IOException {
-        File reportFile = new File(BASE_PATH + "parking_lot_report.csv");
-        File parentDir = reportFile.getParentFile();
-        if (parentDir != null && !parentDir.exists()) {
-            if (!parentDir.mkdirs()) {
-                Logger.error("FileHelper: Failed to create directory for report: " + parentDir.getPath());
-                throw new IOException("Failed to create directory for report: " + parentDir.getPath());
+    private static List<ParkingSlot> initializeEmptySlots(int size) {
+        List<ParkingSlot> slots = new ArrayList<>();
+        for (int i = 1; i <= size; i++) {
+            slots.add(new ParkingSlot(i));
+        }
+        saveParkingLotFile(slots);
+        return slots;
+    }
+
+    public static boolean saveParkingLotFile(List<ParkingSlot> slots) {
+        try {
+            Files.createDirectories(DATA_DIR);
+            List<String> lines = new ArrayList<>();
+            for (ParkingSlot slot : slots) {
+                String content = slot.isOccupied() ? slot.getCar().getLicensePlate() : "EMPTY";
+                lines.add("(" + slot.getNumber() + ", " + content + ")");
             }
-            Logger.log("FileHelper: Created directory " + parentDir.getPath());
+            Files.write(PARKING_LOT_FILE, lines);
+            Logger.log("Successfully saved " + slots.size() + " slots to " + PARKING_LOT_FILE);
+            return true;
+        } catch (IOException e) {
+            Logger.log("Error saving " + PARKING_LOT_FILE + ": " + e.getMessage());
+            return false;
         }
-        if (!reportFile.getParentFile().canWrite()) {
-            Logger.error("FileHelper: No write permission for directory: " + parentDir.getPath());
-            throw new IOException("No write permission for directory: " + parentDir.getPath());
-        }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile))) {
-            writer.write("Slot Number,Status,License Plate\n");
-            for (ParkingSlot slot : lot.getSlots()) {
+    }
+
+    public static boolean generateReport(List<ParkingSlot> slots) {
+        try {
+            Files.createDirectories(DATA_DIR);
+            List<String> lines = new ArrayList<>();
+            lines.add("Slot Number,Status,License Plate");
+            for (ParkingSlot slot : slots) {
                 String status = slot.isOccupied() ? "Occupied" : "Empty";
-                String licensePlate = slot.isOccupied() ? slot.getCar().getPlateNumber() : "N/A";
-                writer.write(String.format("%d,%s,%s\n", slot.getNumber(), status, licensePlate));
+                String plate = slot.isOccupied() ? slot.getCar().getLicensePlate() : "";
+                lines.add(slot.getNumber() + "," + status + "," + plate);
             }
+            Files.write(REPORT_FILE, lines);
+            Logger.log("Successfully generated report to " + REPORT_FILE);
+            return true;
         } catch (IOException e) {
-            Logger.error("FileHelper: Failed to generate report: " + e.getMessage());
-            throw new IOException("Unable to generate report: " + e.getMessage());
+            Logger.log("Error generating report to " + REPORT_FILE + ": " + e.getMessage());
+            return false;
         }
-        Logger.log("FileHelper: Generated report at " + reportFile.getPath());
     }
 }

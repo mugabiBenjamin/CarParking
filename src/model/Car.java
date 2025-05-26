@@ -1,24 +1,17 @@
 package model;
 
-import util.Validator;
-
 public class Car {
-    private final String plateNumber;
-    private final long parkedAt;
+    private final String licensePlate;
 
-    public Car(String plateNumber) {
-        if (!Validator.isValidPlate(plateNumber)) {
-            throw new IllegalArgumentException("Invalid license plate format");
-        }
-        this.plateNumber = plateNumber;
-        this.parkedAt = System.currentTimeMillis();
+    public Car(String licensePlate) {
+        this.licensePlate = licensePlate;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
     }
 
     public String getPlateNumber() {
-        return plateNumber;
-    }
-
-    public long getParkedAt() {
-        return parkedAt;
+        return licensePlate;
     }
 }
