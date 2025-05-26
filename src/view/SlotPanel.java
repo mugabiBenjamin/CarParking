@@ -117,6 +117,8 @@ public class SlotPanel extends JPanel {
 
             unparkButton = new JButton();
             unparkButton.setToolTipText("Unpark car");
+            unparkButton.setContentAreaFilled(false); // Transparent background
+            unparkButton.setBorderPainted(false); // No borders
             try {
                 InputStream iconStream = getClass().getResourceAsStream("/resources/icons/unpark.png");
                 if (iconStream != null) {
@@ -131,9 +133,11 @@ public class SlotPanel extends JPanel {
                 if (lot.getSlot(slotNumber).map(ParkingSlot::isOccupied).orElse(false)) {
                     int confirm = JOptionPane.showConfirmDialog(
                             SlotPanel.this,
-                            "Unpark car from slot " + slotNumber + "?",
+                            "<html>Unpark car from slot " + slotNumber
+                                    + "?<br><b>This action is irreversible.</b></html>",
                             "Confirm Unpark",
-                            JOptionPane.YES_NO_OPTION);
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE);
                     if (confirm == JOptionPane.YES_OPTION) {
                         controller.unparkCar(slotNumber);
                         selectBox.setSelected(false);
