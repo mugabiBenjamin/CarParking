@@ -2,6 +2,7 @@ package view;
 
 import controller.ParkingController;
 import util.IconUtil;
+import util.Logger;
 import util.MessageBox;
 
 import javax.swing.*;
@@ -86,7 +87,9 @@ public class BatchPanel extends JPanel {
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) {
+            slotPanel.clearSelection();
             statusBar.setText("Batch unpark cancelled");
+            Logger.log("Batch unpark cancelled, cleared " + selectedSlots.size() + " selected checkboxes");
             return;
         }
 
