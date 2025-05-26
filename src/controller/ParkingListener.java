@@ -1,17 +1,17 @@
 package controller;
 
 public interface ParkingListener {
-    void onParkResult(ParkResult result);
+    void onParkResult(Result result);
 
-    void onUnparkResult(UnparkResult result);
+    void onUnparkResult(Result result);
 
-    void onBatchUnparkResult(BatchUnparkResult result);
+    void onBatchUnparkResult(Result result);
 
-    void onFindCarResult(FindCarResult result);
+    void onFindCarResult(Result result);
+
+    void onReportResult(Result result);
+
+    void onLoadDataResult(Result result);
 
     void onStatusUpdate(String message);
-
-    void onReportResult(ReportResult result);
-
-    void onLoadDataResult(LoadDataResult result);
 }
