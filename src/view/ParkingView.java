@@ -144,6 +144,16 @@ public class ParkingView extends JFrame implements ParkingListener {
     }
 
     @Override
+    public void onReportResult(ReportResult result) {
+        if (result.isSuccess()) {
+            MessageBox.showInfo(result.getMessage());
+        } else {
+            MessageBox.showError(result.getMessage(), "Check file permissions or disk space.");
+        }
+        updateStatusBar(result.getMessage());
+    }
+
+    @Override
     public void onStatusUpdate(String message) {
         updateStatusBar(message);
     }
