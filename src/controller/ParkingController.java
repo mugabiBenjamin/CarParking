@@ -14,7 +14,7 @@ public class ParkingController {
     private final ParkingLot lot;
     private final FileHelper fileHelper;
     private final ParkingListener listener;
-    private static final String REPORT_FILE_PATH = "src/data/parking_lot_report.csv";
+    private static final String REPORT_FILE_PATH = "data/parking_lot_report.csv";
 
     public ParkingController(ParkingLot lot, ParkingListener listener) {
         this.lot = lot;
@@ -30,11 +30,19 @@ public class ParkingController {
             listener.onStatusUpdate(message);
             Logger.log(message);
         } catch (IOException e) {
-            String message = "Error loading parking data: " + e.getMessage();
+            String message = "Failed to load parking_lot.txt: " + e.getMessage();
+            initializeEmptySlots();
             listener.onLoadDataResult(new LoadDataResult(false, message));
             listener.onStatusUpdate(message);
-            Logger.error("Failed to load parking data: " + e.getMessage());
+            Logger.error(message);
         }
+    }
+
+    private void initializeEmptySlots() {
+        for (ParkingSlot slot : lot.getSlots()) {
+            slot.unparkCar();
+        }
+        Logger.log("ParkingController: Initialized empty slots due to load failure");
     }
 
     public void parkCar(String licensePlate) {
