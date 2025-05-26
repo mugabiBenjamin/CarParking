@@ -29,6 +29,7 @@ public class ParkingView extends JFrame implements ParkingListener {
         setSize(600, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        setLocationRelativeTo(null); // Center the window on the screen
 
         // Add Online Help Menu
         JMenuBar menuBar = new JMenuBar();
