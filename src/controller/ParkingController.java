@@ -40,6 +40,14 @@ public class ParkingController {
             listener.onParkResult(new Result(false, "Invalid license plate: " + licensePlate));
             return;
         }
+        // Check for duplicate license plate
+        for (ParkingSlot slot : lot.getSlots()) {
+            if (slot.isOccupied() && slot.getCar().getLicensePlate().equals(licensePlate)) {
+                listener.onParkResult(
+                        new Result(false, "Car with license plate " + licensePlate + " is already parked"));
+                return;
+            }
+        }
         for (ParkingSlot slot : lot.getSlots()) {
             if (!slot.isOccupied()) {
                 slot.park(new Car(licensePlate));
