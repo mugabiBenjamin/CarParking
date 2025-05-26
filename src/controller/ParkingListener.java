@@ -10,4 +10,6 @@ public interface ParkingListener {
     void onFindCarResult(FindCarResult result);
 
     void onStatusUpdate(String message);
+
+    void onReportResult(ReportResult result);
 }
