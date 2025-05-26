@@ -2,6 +2,7 @@ package view;
 
 import controller.ParkingController;
 import util.IconUtil;
+import util.Logger;
 import util.MessageBox;
 
 import javax.swing.*;
@@ -84,32 +85,20 @@ public class BatchPanel extends JPanel {
                 "Are you sure you want to unpark " + selectedSlots.size() + " car(s)? This action is irreversible.",
                 "Confirm Batch Unpark",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+                JOptionPane.WARNING_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) {
+            slotPanel.clearSelection();
             statusBar.setText("Batch unpark cancelled");
+            Logger.log("Batch unpark cancelled, cleared " + selectedSlots.size() + " selected checkboxes");
             return;
         }
 
-        int unparkedCount = controller.batchUnpark(selectedSlots);
+        controller.batchUnpark(selectedSlots);
         slotPanel.clearSelection();
-        slotPanel.updateSlots();
-        String message = "Batch unparked " + unparkedCount + " car(s)";
-        MessageBox.showInfo(message);
-        statusBar.setText(message);
     }
 
     private void handleGenerateReportAction() {
-        try {
-            controller.generateReport();
-            MessageBox.showInfo("Parking lot report generated as data/parking_lot_report.csv");
-            statusBar.setText("Report generated successfully");
-        } catch (Exception e) {
-            MessageBox.showError("Failed to generate report: " + e.getMessage(),
-                    "An error occurred while generating the report.",
-                    "Check logs for details and try again.");
-            statusBar.setText("Report generation failed");
-        }
+        controller.generateReport();
     }
 
     // For testing

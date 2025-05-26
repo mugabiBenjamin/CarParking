@@ -5,33 +5,35 @@ import model.ParkingLot;
 import model.ParkingSlot;
 import util.FileHelper;
 import util.Logger;
-import util.MessageBox;
-import view.ParkingView;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 public class ParkingController {
     private final ParkingLot lot;
-    private final ParkingView view;
     private final FileHelper fileHelper;
+    private final ParkingListener listener;
+    private static final String REPORT_FILE_PATH = "src/data/parking_lot_report.csv";
 
-    public ParkingController(ParkingLot lot, ParkingView view) {
+    public ParkingController(ParkingLot lot, ParkingListener listener) {
         this.lot = lot;
-        this.view = view;
+        this.listener = listener;
         this.fileHelper = new FileHelper("parking_lot.txt");
     }
 
     public void loadParkingData() {
         try {
             fileHelper.loadFromFile(lot);
-            view.getSlotPanel().updateSlots();
-            Logger.log("Parking data loaded successfully");
+            String message = "Parking data loaded successfully";
+            listener.onLoadDataResult(new LoadDataResult(true, message));
+            listener.onStatusUpdate(message);
+            Logger.log(message);
         } catch (IOException e) {
+            String message = "Error loading parking data: " + e.getMessage();
+            listener.onLoadDataResult(new LoadDataResult(false, message));
+            listener.onStatusUpdate(message);
             Logger.error("Failed to load parking data: " + e.getMessage());
-            view.updateStatusBar("Error loading parking data");
         }
     }
 
@@ -39,13 +41,8 @@ public class ParkingController {
         try {
             if (lot.isPlateAlreadyParked(licensePlate)) {
                 String message = "Car " + licensePlate + " is already parked in the system.";
+                listener.onParkResult(new ParkResult(false, message, null, licensePlate));
                 Logger.warn(message);
-                JOptionPane.showMessageDialog(
-                        null,
-                        message,
-                        "Duplicate License Plate",
-                        JOptionPane.ERROR_MESSAGE);
-                view.updateStatusBar(message);
                 return;
             }
 
@@ -54,18 +51,18 @@ public class ParkingController {
                 Car car = new Car(licensePlate);
                 availableSlot.get().parkCar(car);
                 saveParkingData();
-                view.getSlotPanel().updateSlots();
                 String message = "Car " + licensePlate + " parked in slot " + availableSlot.get().getNumber();
+                listener.onParkResult(new ParkResult(true, message, availableSlot.get(), licensePlate));
                 Logger.log(message);
-                MessageBox.showInfo(message);
-                view.updateStatusBar(message);
             } else {
+                String message = "Parking failed: No available slots";
+                listener.onParkResult(new ParkResult(false, message, null, licensePlate));
                 Logger.warn("No available slots for car " + licensePlate);
-                view.updateStatusBar("Parking failed: No available slots");
             }
         } catch (IllegalArgumentException e) {
+            String message = "Parking failed: Invalid license plate - " + e.getMessage();
+            listener.onParkResult(new ParkResult(false, message, null, licensePlate));
             Logger.error("Invalid license plate: " + licensePlate + ", " + e.getMessage());
-            view.updateStatusBar("Parking failed: Invalid license plate");
         }
     }
 
@@ -75,30 +72,30 @@ public class ParkingController {
             String licensePlate = slot.get().getCar().getPlateNumber();
             slot.get().unparkCar();
             saveParkingData();
-            view.getSlotPanel().updateSlots();
             String message = "Car " + licensePlate + " unparked from slot " + slotNumber;
+            listener.onUnparkResult(new UnparkResult(true, message, slotNumber, licensePlate));
             Logger.log(message);
-            view.updateStatusBar(message);
         } else {
+            String message = "Unpark failed: Slot " + slotNumber + " is empty";
+            listener.onUnparkResult(new UnparkResult(false, message, slotNumber, null));
             Logger.warn("No car to unpark in slot " + slotNumber);
-            view.updateStatusBar("Unpark failed: Slot " + slotNumber + " is empty");
         }
     }
 
-    public Optional<ParkingSlot> findCarByPlate(String licensePlate) {
+    public void findCarByPlate(String licensePlate) {
         Optional<ParkingSlot> slot = lot.findCarByPlate(licensePlate);
         if (slot.isPresent()) {
             String message = "Car " + licensePlate + " found in slot " + slot.get().getNumber();
+            listener.onFindCarResult(new FindCarResult(true, message, slot.get()));
             Logger.log(message);
-            view.updateStatusBar(message);
         } else {
-            Logger.warn("Car " + licensePlate + " not found");
-            view.updateStatusBar("Car " + licensePlate + " not found");
+            String message = "Car " + licensePlate + " not found";
+            listener.onFindCarResult(new FindCarResult(false, message, null));
+            Logger.warn(message);
         }
-        return slot;
     }
 
-    public int batchUnpark(List<Integer> slotNumbers) {
+    public void batchUnpark(List<Integer> slotNumbers) {
         int unparkedCount = 0;
         for (int slotNumber : slotNumbers) {
             Optional<ParkingSlot> slot = lot.getSlot(slotNumber - 1);
@@ -110,15 +107,23 @@ public class ParkingController {
         }
         if (unparkedCount > 0) {
             saveParkingData();
-            view.getSlotPanel().updateSlots();
         }
+        String message = "Batch unparked " + unparkedCount + " car(s)";
+        listener.onBatchUnparkResult(new BatchUnparkResult(unparkedCount, message));
         Logger.log("Batch unpark completed: " + unparkedCount + " cars unparked");
-        return unparkedCount;
     }
 
-    public void generateReport() throws IOException {
-        fileHelper.generateReport(lot);
-        Logger.log("Parking lot report generated");
+    public void generateReport() {
+        try {
+            fileHelper.generateReport(lot);
+            String message = "Report generated successfully at: " + REPORT_FILE_PATH;
+            listener.onReportResult(new ReportResult(true, message, REPORT_FILE_PATH));
+            Logger.log("Parking lot report generated at: " + REPORT_FILE_PATH);
+        } catch (IOException e) {
+            String message = "Failed to generate report: " + e.getMessage();
+            listener.onReportResult(new ReportResult(false, message, REPORT_FILE_PATH));
+            Logger.error("Failed to generate report: " + e.getMessage());
+        }
     }
 
     private void saveParkingData() {
@@ -126,8 +131,9 @@ public class ParkingController {
             fileHelper.save(lot);
             Logger.log("Parking data saved successfully");
         } catch (IOException e) {
+            String message = "Error saving parking data: " + e.getMessage();
+            listener.onStatusUpdate(message);
             Logger.error("Failed to save parking data: " + e.getMessage());
-            view.updateStatusBar("Error saving parking data");
         }
     }
 
