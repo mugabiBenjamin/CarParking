@@ -12,4 +12,6 @@ public interface ParkingListener {
     void onStatusUpdate(String message);
 
     void onReportResult(ReportResult result);
+
+    void onLoadDataResult(LoadDataResult result);
 }
