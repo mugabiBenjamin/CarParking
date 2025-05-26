@@ -154,6 +154,17 @@ public class ParkingView extends JFrame implements ParkingListener {
     }
 
     @Override
+    public void onLoadDataResult(LoadDataResult result) {
+        if (result.isSuccess()) {
+            slotPanel.updateSlots();
+            Logger.log("ParkingView: Updated slots after loading data");
+        } else {
+            MessageBox.showError(result.getMessage(), "Check the parking_lot.txt file.");
+        }
+        updateStatusBar(result.getMessage());
+    }
+
+    @Override
     public void onStatusUpdate(String message) {
         updateStatusBar(message);
     }
