@@ -9,18 +9,6 @@ public class ParkingSlot {
         this.car = null;
     }
 
-    public int getNumber() {
-        return number;
-    }
-
-    public Car getCar() {
-        return car;
-    }
-
-    public boolean isOccupied() {
-        return car != null;
-    }
-
     public void parkCar(Car car) {
         if (isOccupied()) {
             throw new IllegalStateException("Slot " + number + " is already occupied");
@@ -30,8 +18,20 @@ public class ParkingSlot {
 
     public void unparkCar() {
         if (!isOccupied()) {
-            throw new IllegalStateException("Slot " + number + " is already empty");
+            return; // Silently return if slot is already empty
         }
         this.car = null;
+    }
+
+    public boolean isOccupied() {
+        return car != null;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public int getNumber() {
+        return number;
     }
 }
