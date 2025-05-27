@@ -131,39 +131,38 @@ The GUI should launches. The `data/parking_lot.txt` file is created automaticall
 
 ## Usage
 
-### Managing Vehicles
+### Parking a Car
 
-1. **Parking a Car:**
+- In the **Park a Car** panel:
+  - Enter a license plate (e.g., `UAA 123B`, `UG 123B`, `ABC123`).
+  - Click **Park** or press **Enter.**
+  - Feedback: Green check for valid input, red X with tooltip for invalid input.
+  - On success, the car is parked in the first available slot, and the status bar updates.
 
-   - In the "Park a Car" section, enter a license plate (e.g., `UAA 123B`, `UG 123B`, `ABC123`) in the License Plate field.
-   - Click `Park` or press Enter to assign the vehicle to the first available slot.
-   - Validation feedback: Green check for valid input, red X with tooltip for invalid input.
+### Searching for a Car
 
-2. **Finding a Car:**
+- In the **Search for a Car** panel:
+  - Enter a license plate.
+  - Click **Search** or press **Enter.**
+  - If found, the slot highlights blue for 2 seconds; otherwise, a dialog shows the result.
+  - Invalid inputs trigger an error dialog with preserved input.
 
-   - In the "Search for a Car" section, enter a license plate in the License Plate field.
-   - Click `Search` or press Enter to locate the parked vehicle.
-   - If found, the slot highlights blue for 2 seconds; otherwise, an info dialog appears.
+### Batch Unparking
 
-3. **Removing a Car:**
+- In the **Batch Operations** panel:
+  - Select occupied slots using checkboxes.
+  - Click **Batch Unpark** and confirm the action.
+  - Selected slots are cleared, and the status bar updates.
 
-   - Click an occupied parking slot `light red` to unpark the vehicle.
-   - Confirm the removal in the dialog (irreversible action).
-   - The slot turns `light green`, and the status bar updates.
+### Generating Reports
 
-### User Interface Guide
+- In the **Batch Operations** panel, click **Generate Report.**
+- A CSV file (`data/parking_lot_report.csv`) is created with slot details.
 
-- **Control Panel:** Top section with "Park a Car" and "Search for a Car" fields/buttons, plus a Help button (right-aligned).
+### Accessing Help
 
-- **Parking Slots Display:** Central grid (2x5) showing 10 slots:
-
-  - Light green (empty, not clickable, check icon).
-  - Light red (occupied, clickable, car icon).
-  - Blue (found via search, temporary).
-
-- **Status Bar:** Bottom, shows action feedback (e.g., "Parked car ABC123 in slot 1"), clears after 5 seconds.
-- **Help Dialog:** Click Help to view a 600x500 guide (vertical scrollbar if needed).
-- **Error Handling:** Invalid inputs trigger dialogs with tooltips, preserve input, and refocus the field.
+- Click the **Help** button to view a detailed user guide in a scrollable dialog.
+- Access the GitHub repository via the **Online Help** menu for further documentation.
 
 ## Configuration
 
