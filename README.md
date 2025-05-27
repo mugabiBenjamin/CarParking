@@ -112,12 +112,7 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 3. Verify icon resources in `src/resources/icons/`:
 
    ```plaintext
-   CarParking/src/resources/icons/
-   ├─ car.png
-   ├─ check.png
-   ├─ x.png
-   ├─ search.png
-   └─ help.png
+   car.png, check.png, check-green.png, help.png, report.png, search.png, unpark.png, x.png
    ```
 
 4. Compile the project:
@@ -132,8 +127,7 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
    java -cp bin Main
    ```
 
-_The GUI should launch, allowing you to manage parking slots._
-_The `data/parking_lot.txt` file is created automatically if it doesn't exist._
+The GUI should launches. The `data/parking_lot.txt` file is created automatically if it doesn't exist.
 
 ## Usage
 
