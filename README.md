@@ -164,17 +164,16 @@ The GUI should launches. The `data/parking_lot.txt` file is created automaticall
 
 ## Configuration
 
-The `config.properties` file in the project root (`CarParking/`) specifies the data storage path. Example:
+The `config.properties` file in the project root specifies the data file path:
 
 ```properties
 # Application Configuration
 parking.data.file=data/parking_lot.txt
 ```
 
-- **parking.data.file:** Path to the parking data file, relative to the project root.
+- **parking.data.file:** Relative path to the parking data file.
 - The `data/` directory and `parking_lot.txt` are created automatically if missing.
-- Use relative paths for portability; avoid absolute paths.
-- Do not commit `config.properties` to Git (listed in `.gitignore`).
+- Listed in `.gitignore` to avoid committing sensitive paths.
 
 ## Project Structure
 
