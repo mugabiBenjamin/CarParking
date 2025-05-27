@@ -2,6 +2,7 @@
 
 ![Java](https://img.shields.io/badge/Java-17-blue)
 ![Swing](https://img.shields.io/badge/GUI-Swing-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. It allows users to park, unpark, and search cars by license plate, providing real-time feedback and automatic slot management. Parking data is stored in local text files for persistence across sessions. Designed for educational purposes, it demonstrates object-oriented programming, file I/O, and GUI development, offering a simple, user-friendly parking lot management tool.
 
@@ -11,7 +12,6 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Configuration](#configuration)
 - [Project Structure](#project-structure)
 - [Development Notes](#development-notes)
 - [Contributing](#contributing)
@@ -21,44 +21,58 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 
 ## Features
 
-- **User-friendly GUI** developed with Java Swing, featuring:
+- **Intuitive GUI** built with Java Swing:
 
-  - Color-coded parking slots (`light green` for available, `light red` for occupied, `blue` for search results).
-  - Center-aligned control sections with TitledBorder grouping (`Park a Car`, `Search for a Car`).
-  - Real-time updates on parking, unparking, and search actions.
-  - Help dialog for user guidance.
+  - Displays 10 parking slots in a 2x5 grid, color-coded for status:
+    - **Light green**: Empty slots (non-clickable, check icon).
+    - **Light red**: Occupied slots (clickable for unparking, car icon).
+    - **Blue**: Found slots (highlighted for 2 seconds after search).
+  - Control panels for parking, searching, batch operations, and help, with titled borders.
+  - Status bar for action feedback, auto-clears after 5 seconds.
+  - Help dialog with detailed user guide, accessible via a button.
 
-- **Real-time parking management:**
+- **Parking Management**:
 
-  - Visual display of 10 parking slots with vehicle license plates.
-  - Park cars in the first available slot via license plate input.
+  - Park cars in the first available slot using a license plate input.
+  - Unpark cars from specific slots with confirmation dialogs (irreversible action).
+  - Batch unpark multiple selected slots with confirmation.
+  - Search for cars by license plate, highlighting the slot if found.
 
-- **Search functionality:**
+- **License Plate Validation**:
 
-  - Locate parked vehicles by license plate, with slots highlighted blue for 2 seconds.
-  - Real-time validation feedback (green check for valid input, red X with tooltip for invalid).
+  - Supports three formats:
+    - **Normal**: `UAA 123B` (U, two letters, space, three digits, letter).
+    - **Government**: `UG 123B` (UG, space, three digits, letter).
+    - **Personalized**: 2–8 characters starting with a letter (e.g., `ABC123`).
+  - Real-time validation with visual feedback (green check for valid, red X with tooltip for invalid).
+  - Preserves invalid inputs for correction with refocused input field.
 
-- **Persistent storage** using file-based data (`data/parking_lot.txt`), configurable via `config.properties`, retaining parking data across sessions.
+- **Data Persistence**:
 
-- **Car plate validation:**
+  - Stores parking data in `data/parking_lot.txt` (format: `(slotNumber, licensePlate or EMPTY)`).
+  - Generates CSV reports (`data/parking_lot_report.csv`) with slot number, status, and license plate.
+  - Configurable data file path via `config.properties`.
 
-  - Supports normal (`UAA 123B`), government (`UG 123B`), and personalized (2–8 chars, e.g., `ABC123`) formats.
-  - Real-time validation with non-destructive error handling (input preserved, refocus on errors).
+- **MVC Architecture**:
 
-- **MVC-like architecture** for clear separation of concerns, enhancing maintainability.
+  - Separates model (`Car`, `ParkingLot`, `ParkingSlot`), view (Swing panels), and controller (`ParkingController`).
+  - Uses `ParkingListener` for event-driven communication between controller and view.
 
-- **Accessibility features:**
+- **Accessibility Features**:
 
-  - High-contrast colors, screen-reader-compatible tooltips, and tab navigation.
-  - Error dialogs and status bar feedback (clears after 5 seconds) for user guidance.
+  - High-contrast colors (light red/green, blue) for visibility.
+  - Tooltips for all interactive elements, compatible with screen readers.
+  - Keyboard shortcuts (Enter key for park/search actions).
+  - Error dialogs with recovery steps for user guidance.
 
-- **Logging system** (work-in-progress) for tracking parking, unparking, and search actions.
+- **Error Handling and Logging**:
+  - Handles invalid inputs, file I/O errors, and disk space issues with descriptive dialogs.
+  - Logs actions, errors, and warnings with timestamps via `Logger` for debugging.
 
 ## Prerequisites
 
-- [Java Development Kit (JDK) 17](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) _(**Recommended:** [OpenJDK](https://adoptium.net/))_
+- [Java Development Kit (JDK) 17](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) (Recommended: [OpenJDK](https://adoptium.net/))
 - A Java IDE (e.g., [IntelliJ IDEA](https://www.jetbrains.com/idea/download/), [Eclipse](https://www.eclipse.org/downloads/), [VS Code](https://code.visualstudio.com/Download)) or terminal access
-- [Git](https://git-scm.com/downloads) (optional, for cloning the repository)
 
 ## Installation
 
@@ -69,104 +83,60 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
    cd CarParking
    ```
 
-2. Create the configuration file: **Linux/macOS:**
-
-   **Note:** Ensure the `config.properties` file is in the root directory when running the app.
-
-   ```bash
-   echo "# Application Configuration
-   parking.data.file=data/parking_lot.txt" > config.properties
-   ```
-
-   **Windows (Command Prompt):**
-
-   ```cmd
-   echo # Application Configuration > config.properties
-   echo parking.data.file=data/parking_lot.txt >> config.properties
-   ```
-
-   **Windows (Powershell):**
-
-   ```powershell
-   echo # Application Configuration > config.properties
-   echo parking.data.file=data/parking_lot.txt >> config.properties
-   ```
-
-3. Verify icon resources in `src/resources/icons/`:
+2. Verify icon resources in `src/resources/icons/`:
 
    ```plaintext
-   CarParking/src/resources/icons/
-   ├─ car.png
-   ├─ check.png
-   ├─ x.png
-   ├─ search.png
-   └─ help.png
+   car.png, check.png, check-green.png, help.png, report.png, search.png, unpark.png, x.png
    ```
 
-4. Compile the project:
+3. Compile the project:
 
    ```bash
    javac -d bin src/**/*.java src/*.java
    ```
 
-5. Run the application:
+4. Run the application:
 
    ```bash
    java -cp bin Main
    ```
 
-_The GUI should launch, allowing you to manage parking slots._
-_The `data/parking_lot.txt` file is created automatically if it doesn't exist._
+The GUI should launches. The `data/parking_lot.txt` file is created automatically if it doesn't exist.
 
 ## Usage
 
-### Managing Vehicles
+### Parking a Car
 
-1. **Parking a Car:**
+- In the **Park a Car** panel:
+  - Enter a license plate (e.g., `UAA 123B`, `UG 123B`, `ABC123`).
+  - Click **Park** or press **Enter.**
+  - Feedback: Green check for valid input, red X with tooltip for invalid input.
+  - On success, the car is parked in the first available slot, and the status bar updates.
 
-   - In the "Park a Car" section, enter a license plate (e.g., `UAA 123B`, `UG 123B`, `ABC123`) in the License Plate field.
-   - Click `Park` or press Enter to assign the vehicle to the first available slot.
-   - Validation feedback: Green check for valid input, red X with tooltip for invalid input.
+### Searching for a Car
 
-2. **Finding a Car:**
+- In the **Search for a Car** panel:
+  - Enter a license plate.
+  - Click **Search** or press **Enter.**
+  - If found, the slot highlights blue for 2 seconds; otherwise, a dialog shows the result.
+  - Invalid inputs trigger an error dialog with preserved input.
 
-   - In the "Search for a Car" section, enter a license plate in the License Plate field.
-   - Click `Search` or press Enter to locate the parked vehicle.
-   - If found, the slot highlights blue for 2 seconds; otherwise, an info dialog appears.
+### Batch Unparking
 
-3. **Removing a Car:**
+- In the **Batch Operations** panel:
+  - Select occupied slots using checkboxes.
+  - Click **Batch Unpark** and confirm the action.
+  - Selected slots are cleared, and the status bar updates.
 
-   - Click an occupied parking slot `light red` to unpark the vehicle.
-   - Confirm the removal in the dialog (irreversible action).
-   - The slot turns `light green`, and the status bar updates.
+### Generating Reports
 
-### User Interface Guide
+- In the **Batch Operations** panel, click **Generate Report.**
+- A CSV file (`data/parking_lot_report.csv`) is created with slot details.
 
-- **Control Panel:** Top section with "Park a Car" and "Search for a Car" fields/buttons, plus a Help button (right-aligned).
+### Accessing Help
 
-- **Parking Slots Display:** Central grid (2x5) showing 10 slots:
-
-  - Light green (empty, not clickable, check icon).
-  - Light red (occupied, clickable, car icon).
-  - Blue (found via search, temporary).
-
-- **Status Bar:** Bottom, shows action feedback (e.g., "Parked car ABC123 in slot 1"), clears after 5 seconds.
-- **Help Dialog:** Click Help to view a 600x500 guide (vertical scrollbar if needed).
-- **Error Handling:** Invalid inputs trigger dialogs with tooltips, preserve input, and refocus the field.
-
-## Configuration
-
-The `config.properties` file in the project root (`CarParking/`) specifies the data storage path. Example:
-
-```properties
-# Application Configuration
-parking.data.file=data/parking_lot.txt
-```
-
-- **parking.data.file:** Path to the parking data file, relative to the project root.
-- The `data/` directory and `parking_lot.txt` are created automatically if missing.
-- Use relative paths for portability; avoid absolute paths.
-- Do not commit `config.properties` to Git (listed in `.gitignore`).
+- Click the **Help** button to view a detailed user guide in a scrollable dialog.
+- Access the GitHub repository via the **Online Help** menu for further documentation.
 
 ## Project Structure
 
@@ -174,52 +144,60 @@ parking.data.file=data/parking_lot.txt
 CarParking/
 ├─ src/
 │  ├─ controller/
-│  │  └─ ParkingController.java              # Handles user actions and updates model/view (main app logic)
+│  │  ├─ BatchUnparkResult.java              # Result for batch unpark operations
+│  │  ├─ FindCarResult.java                  # Result for car search
+│  │  ├─ LoadDataResult.java                 # Result for loading parking data
+│  │  ├─ ParkingController.java              # Core logic for parking operations
+│  │  ├─ ParkingListener.java                # Interface for controller-view communication
+│  │  ├─ ParkResult.java                     # Result for parking a car
+│  │  ├─ ReportResult.java                   # Result for report generation
+│  │  ├─ Result.java                         # Generic result class
+│  │  └─ UnparkResult.java                   # Result for unparking a car
 │  ├─ data/
-│  │  ├─ .gitkeep                            # Ensures the data directory exists in Git
-│  │  └─ parking_lot.txt                     # Stores persistent parking slot data (auto-created)
+│  │  ├─ .gitkeep                            # Ensures data directory is tracked
+│  │  ├─ config.properties                   # Configuration file (auto-created)
+│  │  ├─ parking_lot.txt                     # Persistent parking data
+│  │  └─ parking_lot_report.csv              # Generated report file
 │  ├─ model/
-│  │  ├─ Car.java                            # Represents a car and its license plate
-│  │  ├─ ParkingLot.java                     # Manages all parking slots and cars (core data model)
-│  │  └─ ParkingSlot.java                    # Represents a single parking slot (occupied/empty)
+│  │  ├─ Car.java                            # Represents a car with license plate
+│  │  ├─ ParkingLot.java                     # Manages collection of parking slots
+│  │  └─ ParkingSlot.java                    # Represents a single parking slot
 │  ├─ resources/
-│  │  └─ icons/                              # Contains icon image files for the GUI
+│  │  └─ icons/                              # GUI icon assets
 │  ├─ util/
-│  │  ├─ FileHelper.java                     # File I/O utilities for reading/writing parking data
-│  │  ├─ IconUtil.java                       # Loads and manages icon resources
-│  │  ├─ Logger.java                         # Logs parking, unparking, and search actions (WIP)
-│  │  ├─ MessageBox.java                     # Utility for showing dialogs and messages
-│  │  └─ Validator.java                      # Validates license plate input formats
+│  │  ├─ FileHelper.java                     # File I/O for data persistence
+│  │  ├─ IconUtil.java                       # Icon loading and scaling
+│  │  ├─ Logger.java                         # Logging utility
+│  │  ├─ MessageBox.java                     # Dialogs for info/errors
+│  │  └─ Validator.java                      # License plate validation
 │  ├─ view/
-│  │  ├─ HelpPanel.java                      # Help dialog content and layout
-│  │  ├─ ParkingSlotPanel.java               # Visual representation of a single parking slot
-│  │  ├─ ParkingView.java                    # Main application window and layout
-│  │  ├─ ParkPanel.java                      # "Park a Car" input section
-│  │  ├─ RoundedBorder.java                  # Custom border for rounded UI elements
-│  │  ├─ SearchPanel.java                    # "Search for a Car" input section
-│  │  └─ SlotPanel.java                      # Base panel for slot-related UI
-│  └─ Main.java                              # Application entry point (launches the GUI)
-├─ .gitignore                                # Git ignore rules (e.g., config, build files)
-├─ config.properties                         # Configurable properties (e.g., data file path)
-├─ LICENSE                                   # Project license (MIT)
+│  │  ├─ BatchPanel.java                     # Batch unparking and report generation
+│  │  ├─ HelpPanel.java                      # User guide dialog
+│  │  ├─ ParkingSlotPanel.java               # Individual slot display
+│  │  ├─ ParkingView.java                    # Main application window
+│  │  ├─ ParkPanel.java                      # Parking input panel
+│  │  ├─ RoundedBorder.java                  # Custom rounded border
+│  │  ├─ SearchPanel.java                    # Search input panel
+│  │  └─ SlotPanel.java                      # Grid of parking slots
+│  └─ Main.java                              # Application entry point
+├─ .gitignore                                # Git ignore rules
+├─ config.properties                         # Configuration file
+├─ LICENSE                                   # MIT License
 └─ README.md                                 # Project documentation
 ```
 
 ## Development Notes
 
-### Advantages of the Current Structure
+- **MVC Architecture:** Ensures modularity with clear separation of model, view, and controller.
+- **Data Persistence:** File-based storage is simple but may not scale for large lots; consider a database for future enhancements.
+- **GUI Design:** Swing provides a functional interface, but modern frameworks like JavaFX could enhance aesthetics.
+- **Error Handling:** Robust validation and logging ensure reliability, with descriptive error dialogs.
+- **Potential Improvements:**
 
-#### Src-based Structure
-
-- Industry-standard, compatible with Maven/Gradle.
-- Separates source code from artifacts, supporting CI/CD pipelines.
-- Clean project root, with clear package organization (`controller/`, `model/`, `view/`, `util/`).
-
-#### Data Persistence
-
-- Configurable via `config.properties` for flexible storage locations.
-- Automatic directory creation for `data/parking_lot.txt`.
-- Cross-platform path resolution.
+  - Dynamic parking lot sizes.
+  - Database integration for scalability.
+  - Unit tests for critical components (`Validator`, `FileHelper`).
+  - Enhanced logging with file output.
 
 ## Contributing
 
@@ -227,13 +205,13 @@ Contributions are welcome! To contribute:
 
 1. Fork the repository
 
-2. Create a new branch with a descriptive name (e.g., feature/add-logging, fix/bug-name):
+2. Create a new branch:
 
    ```bash
    git checkout -b feature/your-feature
    ```
 
-3. Commit your changes
+3. Commit changes
 
    ```bash
    git commit -am 'Add new feature'
@@ -245,11 +223,11 @@ Contributions are welcome! To contribute:
    git push origin feature/your-feature
    ```
 
-5. Open a pull request, ensuring compilation (`javac`) and runtime tests pass.
+5. Open a pull request, ensuring code compiles and runs without errors.
 
 ## Issues
 
-If you encounter any issues or bugs, feel free to [open an issue](https://github.com/mugabiBenjamin/CarParking/issues).
+Report bugs or suggest features at [GitHub Issues](https://github.com/mugabiBenjamin/CarParking/issues).
 
 ## License
 
