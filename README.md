@@ -181,34 +181,45 @@ parking.data.file=data/parking_lot.txt
 CarParking/
 ├─ src/
 │  ├─ controller/
-│  │  └─ ParkingController.java              # Handles user actions and updates model/view (main app logic)
+│  │  ├─ BatchUnparkResult.java              # Result for batch unpark operations
+│  │  ├─ FindCarResult.java                  # Result for car search
+│  │  ├─ LoadDataResult.java                 # Result for loading parking data
+│  │  ├─ ParkingController.java              # Core logic for parking operations
+│  │  ├─ ParkingListener.java                # Interface for controller-view communication
+│  │  ├─ ParkResult.java                     # Result for parking a car
+│  │  ├─ ReportResult.java                   # Result for report generation
+│  │  ├─ Result.java                         # Generic result class
+│  │  └─ UnparkResult.java                   # Result for unparking a car
 │  ├─ data/
-│  │  ├─ .gitkeep                            # Ensures the data directory exists in Git
-│  │  └─ parking_lot.txt                     # Stores persistent parking slot data (auto-created)
+│  │  ├─ .gitkeep                            # Ensures data directory is tracked
+│  │  ├─ config.properties                   # Configuration file (auto-created)
+│  │  ├─ parking_lot.txt                     # Persistent parking data
+│  │  └─ parking_lot_report.csv              # Generated report file
 │  ├─ model/
-│  │  ├─ Car.java                            # Represents a car and its license plate
-│  │  ├─ ParkingLot.java                     # Manages all parking slots and cars (core data model)
-│  │  └─ ParkingSlot.java                    # Represents a single parking slot (occupied/empty)
+│  │  ├─ Car.java                            # Represents a car with license plate
+│  │  ├─ ParkingLot.java                     # Manages collection of parking slots
+│  │  └─ ParkingSlot.java                    # Represents a single parking slot
 │  ├─ resources/
-│  │  └─ icons/                              # Contains icon image files for the GUI
+│  │  └─ icons/                              # GUI icon assets
 │  ├─ util/
-│  │  ├─ FileHelper.java                     # File I/O utilities for reading/writing parking data
-│  │  ├─ IconUtil.java                       # Loads and manages icon resources
-│  │  ├─ Logger.java                         # Logs parking, unparking, and search actions (WIP)
-│  │  ├─ MessageBox.java                     # Utility for showing dialogs and messages
-│  │  └─ Validator.java                      # Validates license plate input formats
+│  │  ├─ FileHelper.java                     # File I/O for data persistence
+│  │  ├─ IconUtil.java                       # Icon loading and scaling
+│  │  ├─ Logger.java                         # Logging utility
+│  │  ├─ MessageBox.java                     # Dialogs for info/errors
+│  │  └─ Validator.java                      # License plate validation
 │  ├─ view/
-│  │  ├─ HelpPanel.java                      # Help dialog content and layout
-│  │  ├─ ParkingSlotPanel.java               # Visual representation of a single parking slot
-│  │  ├─ ParkingView.java                    # Main application window and layout
-│  │  ├─ ParkPanel.java                      # "Park a Car" input section
-│  │  ├─ RoundedBorder.java                  # Custom border for rounded UI elements
-│  │  ├─ SearchPanel.java                    # "Search for a Car" input section
-│  │  └─ SlotPanel.java                      # Base panel for slot-related UI
-│  └─ Main.java                              # Application entry point (launches the GUI)
-├─ .gitignore                                # Git ignore rules (e.g., config, build files)
-├─ config.properties                         # Configurable properties (e.g., data file path)
-├─ LICENSE                                   # Project license (MIT)
+│  │  ├─ BatchPanel.java                     # Batch unparking and report generation
+│  │  ├─ HelpPanel.java                      # User guide dialog
+│  │  ├─ ParkingSlotPanel.java               # Individual slot display
+│  │  ├─ ParkingView.java                    # Main application window
+│  │  ├─ ParkPanel.java                      # Parking input panel
+│  │  ├─ RoundedBorder.java                  # Custom rounded border
+│  │  ├─ SearchPanel.java                    # Search input panel
+│  │  └─ SlotPanel.java                      # Grid of parking slots
+│  └─ Main.java                              # Application entry point
+├─ .gitignore                                # Git ignore rules
+├─ config.properties                         # Configuration file
+├─ LICENSE                                   # MIT License
 └─ README.md                                 # Project documentation
 ```
 
