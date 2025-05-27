@@ -264,7 +264,7 @@ Contributions are welcome! To contribute:
 
 ## Issues
 
-If you encounter any issues or bugs, feel free to [open an issue](https://github.com/mugabiBenjamin/CarParking/issues).
+Report bugs or suggest features at [GitHub Issues](https://github.com/mugabiBenjamin/CarParking/issues).
 
 ## License
 
