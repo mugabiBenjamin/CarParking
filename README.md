@@ -2,6 +2,7 @@
 
 ![Java](https://img.shields.io/badge/Java-17-blue)
 ![Swing](https://img.shields.io/badge/GUI-Swing-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. It allows users to park, unpark, and search cars by license plate, providing real-time feedback and automatic slot management. Parking data is stored in local text files for persistence across sessions. Designed for educational purposes, it demonstrates object-oriented programming, file I/O, and GUI development, offering a simple, user-friendly parking lot management tool.
 
