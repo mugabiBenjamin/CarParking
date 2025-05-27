@@ -242,13 +242,13 @@ Contributions are welcome! To contribute:
 
 1. Fork the repository
 
-2. Create a new branch with a descriptive name (e.g., feature/add-logging, fix/bug-name):
+2. Create a new branch:
 
    ```bash
    git checkout -b feature/your-feature
    ```
 
-3. Commit your changes
+3. Commit changes
 
    ```bash
    git commit -am 'Add new feature'
@@ -260,7 +260,7 @@ Contributions are welcome! To contribute:
    git push origin feature/your-feature
    ```
 
-5. Open a pull request, ensuring compilation (`javac`) and runtime tests pass.
+5. Open a pull request, ensuring code compiles and runs without errors.
 
 ## Issues
 
