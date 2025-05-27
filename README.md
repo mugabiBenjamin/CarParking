@@ -22,38 +22,53 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 
 ## Features
 
-- **User-friendly GUI** developed with Java Swing, featuring:
+- **Intuitive GUI** built with Java Swing:
 
-  - Color-coded parking slots (`light green` for available, `light red` for occupied, `blue` for search results).
-  - Center-aligned control sections with TitledBorder grouping (`Park a Car`, `Search for a Car`).
-  - Real-time updates on parking, unparking, and search actions.
-  - Help dialog for user guidance.
+  - Displays 10 parking slots in a 2x5 grid, color-coded for status:
+    - **Light green**: Empty slots (non-clickable, check icon).
+    - **Light red**: Occupied slots (clickable for unparking, car icon).
+    - **Blue**: Found slots (highlighted for 2 seconds after search).
+  - Control panels for parking, searching, batch operations, and help, with titled borders.
+  - Status bar for action feedback, auto-clears after 5 seconds.
+  - Help dialog with detailed user guide, accessible via a button.
 
-- **Real-time parking management:**
+- **Parking Management**:
 
-  - Visual display of 10 parking slots with vehicle license plates.
-  - Park cars in the first available slot via license plate input.
+  - Park cars in the first available slot using a license plate input.
+  - Unpark cars from specific slots with confirmation dialogs (irreversible action).
+  - Batch unpark multiple selected slots with confirmation.
+  - Search for cars by license plate, highlighting the slot if found.
 
-- **Search functionality:**
+- **License Plate Validation**:
 
-  - Locate parked vehicles by license plate, with slots highlighted blue for 2 seconds.
-  - Real-time validation feedback (green check for valid input, red X with tooltip for invalid).
+  - Supports three formats:
+    - **Normal**: `UAA 123B` (U, two letters, space, three digits, letter).
+    - **Government**: `UG 123B` (UG, space, three digits, letter).
+    - **Personalized**: 2–8 characters starting with a letter (e.g., `ABC123`).
+  - Real-time validation with visual feedback (green check for valid, red X with tooltip for invalid).
+  - Preserves invalid inputs for correction with refocused input field.
 
-- **Persistent storage** using file-based data (`data/parking_lot.txt`), configurable via `config.properties`, retaining parking data across sessions.
+- **Data Persistence**:
 
-- **Car plate validation:**
+  - Stores parking data in `data/parking_lot.txt` (format: `(slotNumber, licensePlate or EMPTY)`).
+  - Generates CSV reports (`data/parking_lot_report.csv`) with slot number, status, and license plate.
+  - Configurable data file path via `config.properties`.
 
-  - Supports normal (`UAA 123B`), government (`UG 123B`), and personalized (2–8 chars, e.g., `ABC123`) formats.
-  - Real-time validation with non-destructive error handling (input preserved, refocus on errors).
+- **MVC Architecture**:
 
-- **MVC-like architecture** for clear separation of concerns, enhancing maintainability.
+  - Separates model (`Car`, `ParkingLot`, `ParkingSlot`), view (Swing panels), and controller (`ParkingController`).
+  - Uses `ParkingListener` for event-driven communication between controller and view.
 
-- **Accessibility features:**
+- **Accessibility Features**:
 
-  - High-contrast colors, screen-reader-compatible tooltips, and tab navigation.
-  - Error dialogs and status bar feedback (clears after 5 seconds) for user guidance.
+  - High-contrast colors (light red/green, blue) for visibility.
+  - Tooltips for all interactive elements, compatible with screen readers.
+  - Keyboard shortcuts (Enter key for park/search actions).
+  - Error dialogs with recovery steps for user guidance.
 
-- **Logging system** (work-in-progress) for tracking parking, unparking, and search actions.
+- **Error Handling and Logging**:
+  - Handles invalid inputs, file I/O errors, and disk space issues with descriptive dialogs.
+  - Logs actions, errors, and warnings with timestamps via `Logger` for debugging.
 
 ## Prerequisites
 
