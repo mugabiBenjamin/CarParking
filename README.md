@@ -225,19 +225,16 @@ CarParking/
 
 ## Development Notes
 
-### Advantages of the Current Structure
+- **MVC Architecture:** Ensures modularity with clear separation of model, view, and controller.
+- **Data Persistence:** File-based storage is simple but may not scale for large lots; consider a database for future enhancements.
+- **GUI Design:** Swing provides a functional interface, but modern frameworks like JavaFX could enhance aesthetics.
+- **Error Handling:** Robust validation and logging ensure reliability, with descriptive error dialogs.
+- **Potential Improvements:**
 
-#### Src-based Structure
-
-- Industry-standard, compatible with Maven/Gradle.
-- Separates source code from artifacts, supporting CI/CD pipelines.
-- Clean project root, with clear package organization (`controller/`, `model/`, `view/`, `util/`).
-
-#### Data Persistence
-
-- Configurable via `config.properties` for flexible storage locations.
-- Automatic directory creation for `data/parking_lot.txt`.
-- Cross-platform path resolution.
+  - Dynamic parking lot sizes.
+  - Database integration for scalability.
+  - Unit tests for critical components (`Validator`, `FileHelper`).
+  - Enhanced logging with file output.
 
 ## Contributing
 
