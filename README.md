@@ -72,8 +72,9 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 
 ## Prerequisites
 
-- [Java Development Kit (JDK) 17](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) _(**Recommended:** [OpenJDK](https://adoptium.net/))_
+- [Java Development Kit (JDK) 17](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) (Recommended: [OpenJDK](https://adoptium.net/))
 - A Java IDE (e.g., [IntelliJ IDEA](https://www.jetbrains.com/idea/download/), [Eclipse](https://www.eclipse.org/downloads/), [VS Code](https://code.visualstudio.com/Download)) or terminal access
+- [Git](https://git-scm.com/downloads) (optional, for cloning the repository)
 - [Git](https://git-scm.com/downloads) (optional, for cloning the repository)
 
 ## Installation
