@@ -12,7 +12,6 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Configuration](#configuration)
 - [Project Structure](#project-structure)
 - [Development Notes](#development-notes)
 - [Contributing](#contributing)
@@ -84,42 +83,19 @@ This Java Swing-based desktop parking system runs on Windows, macOS, and Linux. 
    cd CarParking
    ```
 
-2. Create the configuration file: **Linux/macOS:**
-
-   **Note:** Ensure the `config.properties` file is in the root directory when running the app.
-
-   ```bash
-   echo "# Application Configuration
-   parking.data.file=data/parking_lot.txt" > config.properties
-   ```
-
-   **Windows (Command Prompt):**
-
-   ```cmd
-   echo # Application Configuration > config.properties
-   echo parking.data.file=data/parking_lot.txt >> config.properties
-   ```
-
-   **Windows (Powershell):**
-
-   ```powershell
-   echo # Application Configuration > config.properties
-   echo parking.data.file=data/parking_lot.txt >> config.properties
-   ```
-
-3. Verify icon resources in `src/resources/icons/`:
+2. Verify icon resources in `src/resources/icons/`:
 
    ```plaintext
    car.png, check.png, check-green.png, help.png, report.png, search.png, unpark.png, x.png
    ```
 
-4. Compile the project:
+3. Compile the project:
 
    ```bash
    javac -d bin src/**/*.java src/*.java
    ```
 
-5. Run the application:
+4. Run the application:
 
    ```bash
    java -cp bin Main
@@ -161,19 +137,6 @@ The GUI should launches. The `data/parking_lot.txt` file is created automaticall
 
 - Click the **Help** button to view a detailed user guide in a scrollable dialog.
 - Access the GitHub repository via the **Online Help** menu for further documentation.
-
-## Configuration
-
-The `config.properties` file in the project root specifies the data file path:
-
-```properties
-# Application Configuration
-parking.data.file=data/parking_lot.txt
-```
-
-- **parking.data.file:** Relative path to the parking data file.
-- The `data/` directory and `parking_lot.txt` are created automatically if missing.
-- Listed in `.gitignore` to avoid committing sensitive paths.
 
 ## Project Structure
 
