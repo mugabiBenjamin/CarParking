@@ -4,102 +4,126 @@ import controller.ParkingController;
 import controller.ParkingListener;
 import controller.Result;
 import model.ParkingLot;
+import util.IconUtil;
 import util.Logger;
 import util.MessageBox;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 
-public class ParkingView extends JFrame implements ParkingListener {
-    private final ParkingController controller;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+
+public final class ParkingView extends JFrame implements ParkingListener {
+    private static final String APP_TITLE = "Car Parking System";
+    private static final String READY_STATUS = "Ready";
+    private static final String GITHUB_REPOSITORY_URL = "https://github.com/mugabiBenjamin/CarParking";
+
+    private static final int WINDOW_WIDTH = 600;
+    private static final int WINDOW_HEIGHT = 700;
+    private static final int PARKING_LOT_SIZE = 10;
+    private static final int STATUS_CLEAR_DELAY_MILLISECONDS = 5000;
+    private static final int PANEL_SPACING = 10;
+
     private final ParkingLot lot;
+    private final ParkingController controller;
+    private final Timer statusBarTimer;
+
     private JLabel statusBar;
     private SlotPanel slotPanel;
     private ParkPanel parkPanel;
     private SearchPanel searchPanel;
     private BatchPanel batchPanel;
-    private final Timer statusBarTimer;
+    private HelpPanel helpPanel;
 
     public ParkingView() {
+        this.lot = new ParkingLot(PARKING_LOT_SIZE);
+        this.controller = new ParkingController(lot, this);
+        this.statusBarTimer = new Timer(STATUS_CLEAR_DELAY_MILLISECONDS, event -> setStatus(READY_STATUS));
+        this.statusBarTimer.setRepeats(false);
+
+        initializeWindow();
+        initializeMenu();
+        initializeUI();
+        loadApplicationData();
+        setVisible(true);
+        requestInitialFocus();
+    }
+
+    private void initializeWindow() {
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (Exception e) {
-            Logger.log("Failed to set cross-platform look and feel: " + e.getMessage());
+        } catch (Exception exception) {
+            Logger.warn("Failed to set cross-platform look and feel: " + exception.getMessage());
         }
 
-        setTitle("Car Parking System");
-        setSize(600, 700);
+        setTitle(APP_TITLE);
+        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
+        try {
+            setIconImage(IconUtil.createCarIcon(32, 32).getImage());
+        } catch (Exception exception) {
+            Logger.warn("Failed to set application icon: " + exception.getMessage());
+        }
+    }
+
+    private void initializeMenu() {
         JMenuBar menuBar = new JMenuBar();
+
         JMenu helpMenu = new JMenu("Online Help");
         helpMenu.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         JMenuItem visitGithubItem = new JMenuItem("Visit GitHub Repository");
         visitGithubItem.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        visitGithubItem.setToolTipText("Open the GitHub repository in your browser for online help");
-        visitGithubItem.addActionListener(e -> openGitHubRepository());
+        visitGithubItem.setToolTipText("Open the GitHub repository in your browser");
+        visitGithubItem.addActionListener(event -> openGitHubRepository());
+
         helpMenu.add(visitGithubItem);
         menuBar.add(helpMenu);
+
         setJMenuBar(menuBar);
-
-        try {
-            InputStream iconStream = getClass().getResourceAsStream("/resources/icons/car.png");
-            if (iconStream != null) {
-                BufferedImage icon = ImageIO.read(iconStream);
-                setIconImage(icon);
-            } else {
-                System.err.println("Icon resource not found: /resources/icons/car.png");
-            }
-        } catch (IOException e) {
-            System.err.println("Failed to load window icon: " + e.getMessage());
-        }
-
-        this.lot = new ParkingLot(10);
-        this.controller = new ParkingController(lot, this);
-        this.statusBarTimer = new Timer(5000, e -> statusBar.setText("Ready"));
-        this.statusBarTimer.setRepeats(false);
-
-        initUI();
-        if (parkPanel != null && parkPanel.getPlateInput() != null) {
-            boolean focused = parkPanel.getPlateInput().requestFocusInWindow();
-            Logger.log("ParkingView: Requested focus for ParkPanel plateInput, success=" + focused);
-        }
-        controller.loadParkingData();
-        setVisible(true);
     }
 
-    private void initUI() {
-        statusBar = new JLabel("Ready", SwingConstants.CENTER);
-        statusBar.setForeground(Color.BLACK);
+    private void initializeUI() {
+        statusBar = new JLabel(READY_STATUS, SwingConstants.CENTER);
         statusBar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        statusBar.setToolTipText("Shows parking and search status, clears after 5 seconds");
+        statusBar.setToolTipText("Shows parking and search status");
 
         slotPanel = new SlotPanel(controller, lot, statusBar);
-
         parkPanel = new ParkPanel(controller, statusBar);
         searchPanel = new SearchPanel(controller, slotPanel, statusBar);
         batchPanel = new BatchPanel(controller, slotPanel, statusBar);
-        HelpPanel helpPanel = new HelpPanel(statusBar);
+        helpPanel = new HelpPanel(statusBar);
 
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         controlPanel.setFocusable(true);
+
         controlPanel.add(parkPanel);
-        controlPanel.add(Box.createVerticalStrut(10));
+        controlPanel.add(Box.createVerticalStrut(PANEL_SPACING));
         controlPanel.add(searchPanel);
-        controlPanel.add(Box.createVerticalStrut(10));
+        controlPanel.add(Box.createVerticalStrut(PANEL_SPACING));
         controlPanel.add(batchPanel);
-        controlPanel.add(Box.createVerticalStrut(10));
+        controlPanel.add(Box.createVerticalStrut(PANEL_SPACING));
         controlPanel.add(helpPanel);
 
         add(controlPanel, BorderLayout.NORTH);
@@ -109,119 +133,220 @@ public class ParkingView extends JFrame implements ParkingListener {
         slotPanel.updateSlots();
     }
 
+    private void loadApplicationData() {
+        try {
+            controller.loadParkingData();
+        } catch (Exception exception) {
+            Logger.error("Failed to load application data", exception);
+            setStatus("Failed to load parking data");
+            MessageBox.showError(
+                    "The application could not load parking data.",
+                    "Check that the data directory is accessible.",
+                    "Restart the application and try again."
+            );
+        }
+    }
+
+    private void requestInitialFocus() {
+        try {
+            if (parkPanel != null && parkPanel.getPlateInput() != null) {
+                parkPanel.getPlateInput().requestFocusInWindow();
+            }
+        } catch (Exception exception) {
+            Logger.warn("Failed to request initial focus: " + exception.getMessage());
+        }
+    }
+
+    private void openGitHubRepository() {
+        try {
+            URI repositoryUri = URI.create(GITHUB_REPOSITORY_URL);
+
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(repositoryUri);
+                setStatus("Opened GitHub repository");
+                clearStatusLater();
+                return;
+            }
+
+            copyToClipboard(GITHUB_REPOSITORY_URL);
+            MessageBox.showInfo("Browser opening is not supported. Repository URL copied to clipboard.");
+            setStatus("Repository URL copied to clipboard");
+            clearStatusLater();
+        } catch (Exception exception) {
+            Logger.error("Failed to open GitHub repository", exception);
+            copyToClipboard(GITHUB_REPOSITORY_URL);
+            MessageBox.showError(
+                    "Unable to open the GitHub repository.",
+                    "The repository URL has been copied to the clipboard if possible.",
+                    "Paste it into your browser manually."
+            );
+            setStatus("Failed to open GitHub repository");
+            clearStatusLater();
+        }
+    }
+
+    private void copyToClipboard(String value) {
+        try {
+            StringSelection selection = new StringSelection(value);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
+        } catch (Exception exception) {
+            Logger.warn("Failed to copy text to clipboard: " + exception.getMessage());
+        }
+    }
+
     @Override
     public void onParkResult(Result result) {
-        slotPanel.updateSlots(); // Ensure UI updates even on failure
-        if (result.isSuccess()) {
-            MessageBox.showInfo(result.getMessage());
+        Result safeResult = normalizeResult(result, "Parking operation completed");
+
+        if (safeResult.isSuccess()) {
+            updateSlots();
+            MessageBox.showInfo(safeResult.getMessage());
         } else {
-            MessageBox.showError(result.getMessage(), "Check the license plate format or availability.");
+            MessageBox.showError(
+                    safeResult.getMessage(),
+                    "Check the license plate and try again.",
+                    "Confirm that an empty parking slot is available."
+            );
         }
-        updateStatusBar(result.getMessage());
+
+        setStatus(safeResult.getMessage());
+        clearStatusLater();
     }
 
     @Override
     public void onUnparkResult(Result result) {
-        slotPanel.updateSlots(); // Ensure UI updates
-        if (result.isSuccess()) {
-            MessageBox.showInfo(result.getMessage());
+        Result safeResult = normalizeResult(result, "Unparking operation completed");
+
+        if (safeResult.isSuccess()) {
+            updateSlots();
+            MessageBox.showInfo(safeResult.getMessage());
+        } else {
+            MessageBox.showError(
+                    safeResult.getMessage(),
+                    "Choose an occupied slot and try again.",
+                    "Refresh the parking slots if the display looks outdated."
+            );
         }
-        updateStatusBar(result.getMessage());
+
+        setStatus(safeResult.getMessage());
+        clearStatusLater();
     }
 
     @Override
     public void onBatchUnparkResult(Result result) {
-        slotPanel.updateSlots(); // Ensure UI updates
-        if (result.getUnparkedCount() > 0) {
-            MessageBox.showInfo(result.getMessage());
+        Result safeResult = normalizeResult(result, "Batch unpark operation completed");
+
+        if (safeResult.isSuccess()) {
+            updateSlots();
+            MessageBox.showInfo(safeResult.getMessage());
+        } else {
+            MessageBox.showError(
+                    safeResult.getMessage(),
+                    "Select at least one occupied slot.",
+                    "Try the batch unpark operation again."
+            );
         }
-        updateStatusBar(result.getMessage());
+
+        setStatus(safeResult.getMessage());
+        clearStatusLater();
     }
 
     @Override
     public void onFindCarResult(Result result) {
-        if (result.getSlot() != null) {
-            slotPanel.highlightSlot(result.getSlot().getNumber());
-            MessageBox.showInfo(result.getMessage());
+        Result safeResult = normalizeResult(result, "Search operation completed");
+
+        if (safeResult.isSuccess()) {
+            safeResult.findSlot().ifPresent(slot -> slotPanel.highlightSlot(slot.getNumber()));
+            MessageBox.showInfo(safeResult.getMessage());
         } else {
-            MessageBox.showInfo(result.getMessage());
+            MessageBox.showError(
+                    safeResult.getMessage(),
+                    "Check that the license plate is correct.",
+                    "Confirm that the car is currently parked."
+            );
+            setStatus(safeResult.getMessage());
+            clearStatusLater();
         }
-        updateStatusBar(result.getMessage());
     }
 
     @Override
     public void onReportResult(Result result) {
-        if (result.isSuccess()) {
-            MessageBox.showInfo(result.getMessage());
+        Result safeResult = normalizeResult(result, "Report operation completed");
+
+        if (safeResult.isSuccess()) {
+            MessageBox.showInfo(safeResult.getMessage());
         } else {
-            MessageBox.showError(result.getMessage(), "Check file permissions or disk space.");
+            MessageBox.showError(
+                    safeResult.getMessage(),
+                    "Check file permissions for the data directory.",
+                    "Close any open report file and try again."
+            );
         }
-        updateStatusBar(result.getMessage());
+
+        setStatus(safeResult.getMessage());
+        clearStatusLater();
     }
 
     @Override
     public void onLoadDataResult(Result result) {
-        slotPanel.updateSlots(); // Ensure UI updates on load
-        if (result.isSuccess()) {
-            Logger.log("ParkingView: Updated slots after loading data");
-        } else {
-            MessageBox.showError(result.getMessage(), "Using empty parking lot. Check parking_lot.txt format.");
+        Result safeResult = normalizeResult(result, "Load data operation completed");
+
+        if (!safeResult.isSuccess()) {
+            MessageBox.showError(
+                    safeResult.getMessage(),
+                    "Check the parking data file format.",
+                    "The application may initialize an empty parking lot."
+            );
         }
-        updateStatusBar(result.getMessage());
+
+        updateSlots();
+        setStatus(safeResult.getMessage());
+        clearStatusLater();
     }
 
     @Override
     public void onStatusUpdate(String message) {
-        updateStatusBar(message);
+        setStatus(normalizeMessage(message, READY_STATUS));
+        clearStatusLater();
     }
 
-    public void updateStatusBar(String message) {
-        statusBar.setText(message);
-        statusBarTimer.restart();
-    }
-
-    private void openGitHubRepository() {
-        String url = "https://github.com/mugabiBenjamin/CarParking.git";
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            try {
-                Desktop.getDesktop().browse(new URI(url));
-                updateStatusBar("Opened GitHub repository for online help");
-                return;
-            } catch (Exception ex) {
-                Logger.log("Failed to open browser: " + ex.getMessage());
-            }
+    private Result normalizeResult(Result result, String fallbackMessage) {
+        if (result == null) {
+            Logger.warn("Received null result in ParkingView");
+            return Result.failure(fallbackMessage);
         }
-        JPanel panel = new JPanel(new BorderLayout());
-        JLabel label = new JLabel("<html>Could not open browser. Please visit:<br>" + url + "</html>");
-        JButton copyButton = new JButton("Copy URL to Clipboard");
-        copyButton.addActionListener(e -> {
-            Toolkit.getDefaultToolkit().getSystemClipboard()
-                    .setContents(new StringSelection(url), null);
-            updateStatusBar("GitHub URL copied to clipboard");
-        });
-        panel.add(label, BorderLayout.CENTER);
-        panel.add(copyButton, BorderLayout.SOUTH);
-        JOptionPane.showMessageDialog(this, panel, "Open Online Help Manually", JOptionPane.INFORMATION_MESSAGE);
-        updateStatusBar("Displayed online help URL");
+
+        return result;
     }
 
-    public SlotPanel getSlotPanel() {
-        return slotPanel;
+    private void updateSlots() {
+        try {
+            if (slotPanel != null) {
+                slotPanel.updateSlots();
+            }
+        } catch (Exception exception) {
+            Logger.error("Failed to update slot panel", exception);
+            setStatus("Failed to update parking slots");
+        }
     }
 
-    public JLabel getStatusBar() {
-        return statusBar;
+    private void setStatus(String message) {
+        if (statusBar != null) {
+            statusBar.setText(normalizeMessage(message, READY_STATUS));
+        }
     }
 
-    public ParkPanel getParkPanel() {
-        return parkPanel;
+    private void clearStatusLater() {
+        if (statusBarTimer != null) {
+            statusBarTimer.restart();
+        }
     }
 
-    public SearchPanel getSearchPanel() {
-        return searchPanel;
-    }
+    private String normalizeMessage(String message, String fallback) {
+        if (message == null || message.trim().isEmpty()) {
+            return fallback;
+        }
 
-    public BatchPanel getBatchPanel() {
-        return batchPanel;
+        return message.trim();
     }
 }
