@@ -1,4 +1,3 @@
-# === Java build artifacts ===
 *.class
 *.jar
 *.war
@@ -7,71 +6,46 @@
 *.tar.gz
 *.rar
 
-# Output/build directories
 /bin/
 /build/
 /out/
 /target/
+dist/
+nbbuild/
+nbdist/
 
-# === IDE-specific files ===
-
-# IntelliJ
 *.iml
 .idea/
 
-# Eclipse
 .classpath
 .project
 .settings/
 
-# NetBeans
 nbproject/private/
-build/
-nbbuild/
-dist/
-nbdist/
 .nb-gradle/
 
-# VS Code
 .vscode/
 
-# === Logs and debugging ===
 *.log
 hs_err_pid*
 replay_pid*
 
-# === Temporary files ===
 *.tmp
 *.swp
 *.bak
 *.sublime-workspace
 *.sublime-project
-*.DS_Store
-Thumbs.db
 
-# === J2ME Mobile Tools (rare) ===
-.mtj.tmp/
-
-# === BlueJ (if used in class) ===
-*.ctxt
-
-# === Environment / configuration ===
-.env
-.env.local
-.env.*.local
-
-# === System files ===
-*.class~
-*.orig
-
-# === OS-generated files ===
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Ignore all files in the src/data directory
-# except for the .gitkeep file, which is used to keep the directory tracked by git
+.env
+.env.local
+.env.*.local
+config.properties
+
 src/data/*
 !src/data/.gitkeep
 
-config.properties
+*repomix-output.xml
