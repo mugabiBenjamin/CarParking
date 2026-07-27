@@ -1,4 +1,4 @@
-package model;
+package domain.entities;
 
 import util.Validator;
 

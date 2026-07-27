@@ -1,4 +1,4 @@
-package model;
+package domain.entities;
 
 import java.util.Objects;
 import java.util.Optional;
