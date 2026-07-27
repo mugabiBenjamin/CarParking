@@ -1,6 +1,6 @@
 package controller;
 
-import model.ParkingSlot;
+import domain.entities.ParkingSlot;
 
 import java.util.Optional;
 

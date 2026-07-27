@@ -1,8 +1,8 @@
 package view;
 
 import controller.ParkingController;
-import model.ParkingLot;
-import model.ParkingSlot;
+import domain.entities.ParkingLot;
+import domain.entities.ParkingSlot;
 import util.Logger;
 
 import java.awt.Color;

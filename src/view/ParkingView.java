@@ -3,7 +3,7 @@ package view;
 import controller.ParkingController;
 import controller.ParkingListener;
 import controller.Result;
-import model.ParkingLot;
+import domain.entities.ParkingLot;
 import util.IconUtil;
 import util.Logger;
 import util.MessageBox;

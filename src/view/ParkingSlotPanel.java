@@ -1,7 +1,7 @@
 package view;
 
 import controller.ParkingController;
-import model.ParkingSlot;
+import domain.entities.ParkingSlot;
 import util.IconUtil;
 import util.Logger;
 import util.MessageBox;
