@@ -1,8 +1,8 @@
 package controller;
 
-import model.Car;
-import model.ParkingLot;
-import model.ParkingSlot;
+import domain.entities.Car;
+import domain.entities.ParkingLot;
+import domain.entities.ParkingSlot;
 import util.FileHelper;
 import util.Logger;
 import util.Validator;

@@ -1,7 +1,7 @@
 package util;
 
-import model.Car;
-import model.ParkingSlot;
+import domain.entities.Car;
+import domain.entities.ParkingSlot;
 
 import java.io.IOException;
 import java.nio.file.Files;
