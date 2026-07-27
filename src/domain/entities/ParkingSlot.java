@@ -1,5 +1,10 @@
 package domain.entities;
 
+import domain.enums.SlotStatus;
+import domain.exceptions.ParkingSlotEmptyException;
+import domain.exceptions.ParkingSlotOccupiedException;
+import domain.valueobjects.LicensePlate;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -22,22 +27,36 @@ public final class ParkingSlot {
         }
 
         if (isOccupied()) {
-            throw new IllegalStateException("Slot " + number + " is already occupied");
+            throw new ParkingSlotOccupiedException(number);
         }
 
         this.car = car;
     }
 
-    public void unpark() {
+    public Car unpark() {
         if (!isOccupied()) {
-            throw new IllegalStateException("Slot " + number + " is already empty");
+            throw new ParkingSlotEmptyException(number);
         }
 
-        this.car = null;
+        Car removedCar = car;
+        car = null;
+        return removedCar;
     }
 
     public boolean isOccupied() {
         return car != null;
+    }
+
+    public boolean isEmpty() {
+        return car == null;
+    }
+
+    public SlotStatus getStatus() {
+        if (isOccupied()) {
+            return SlotStatus.OCCUPIED;
+        }
+
+        return SlotStatus.EMPTY;
     }
 
     public Car getCar() {
@@ -52,12 +71,20 @@ public final class ParkingSlot {
         return number;
     }
 
-    public boolean hasCar(String licensePlate) {
-        if (licensePlate == null || licensePlate.trim().isEmpty() || car == null) {
+    public boolean hasCar(String rawLicensePlate) {
+        if (rawLicensePlate == null || rawLicensePlate.trim().isEmpty() || car == null) {
             return false;
         }
 
-        return car.getLicensePlate().equalsIgnoreCase(licensePlate.trim());
+        return car.hasPlate(rawLicensePlate);
+    }
+
+    public boolean hasCar(LicensePlate licensePlate) {
+        if (licensePlate == null || car == null) {
+            return false;
+        }
+
+        return car.getLicensePlateValue().equals(licensePlate);
     }
 
     @Override

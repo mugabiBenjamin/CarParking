@@ -1,33 +1,43 @@
 package domain.entities;
 
-import util.Validator;
+import domain.valueobjects.LicensePlate;
 
 import java.util.Objects;
 
 public final class Car {
-    private final String licensePlate;
+    private final LicensePlate licensePlate;
 
     public Car(String licensePlate) {
-        String normalizedPlate = Validator.normalizePlate(licensePlate);
+        this(LicensePlate.of(licensePlate));
+    }
 
-        if (!Validator.isValidPlate(normalizedPlate)) {
-            throw new IllegalArgumentException("Invalid license plate");
+    public Car(LicensePlate licensePlate) {
+        if (licensePlate == null) {
+            throw new IllegalArgumentException("License plate cannot be null");
         }
 
-        this.licensePlate = normalizedPlate;
+        this.licensePlate = licensePlate;
+    }
+
+    public LicensePlate getLicensePlateValue() {
+        return licensePlate;
     }
 
     public String getLicensePlate() {
-        return licensePlate;
+        return licensePlate.getValue();
     }
 
     public String getPlateNumber() {
-        return licensePlate;
+        return licensePlate.getValue();
+    }
+
+    public boolean hasPlate(String rawLicensePlate) {
+        return licensePlate.matches(rawLicensePlate);
     }
 
     @Override
     public String toString() {
-        return licensePlate;
+        return licensePlate.getValue();
     }
 
     @Override
