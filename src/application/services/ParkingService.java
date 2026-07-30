@@ -13,6 +13,7 @@ import application.dto.SlotViewData;
 import application.dto.UnparkCarRequest;
 import application.dto.UnparkCarResponse;
 import application.repositories.ParkingLotRepository;
+import application.repositories.ParkingLotUpdateResult;
 import application.validators.ParkingRequestValidator;
 import domain.entities.Car;
 import domain.entities.ParkingLot;
@@ -81,23 +82,35 @@ public final class ParkingService {
         }
 
         try {
-            ParkingLot parkingLot = parkingLotRepository.load(parkingLotSize);
-            Car car = new Car(request.getLicensePlate());
-            ParkingSlot slot = parkingLot.park(car);
+            ParkingLotUpdateResult<ParkCarResponse> updateResult = parkingLotRepository.update(
+                    parkingLotSize,
+                    parkingLot -> {
+                        Car car = new Car(request.getLicensePlate());
+                        ParkingSlot slot = parkingLot.park(car);
+                        ParkingLotViewData viewData = toParkingLotViewData(parkingLot);
 
-            if (!parkingLotRepository.save(parkingLot)) {
-                return OperationResult.failure(
-                        "PARKING_SAVE_FAILED",
-                        "Failed to save parking data. Car was not parked permanently.",
-                        "Check file permissions and try again."
+                        return new ParkCarResponse(
+                                slot.getNumber(),
+                                car.getLicensePlate(),
+                                viewData
+                        );
+                    }
+            );
+
+            if (updateResult.isCommitted()) {
+                ParkCarResponse response = updateResult.getData();
+
+                return OperationResult.success(
+                        "Car " + response.getLicensePlate() + " parked in slot " + response.getSlotNumber(),
+                        response
                 );
             }
 
-            ParkingLotViewData viewData = toParkingLotViewData(parkingLot);
-
-            return OperationResult.success(
-                    "Car " + car.getLicensePlate() + " parked in slot " + slot.getNumber(),
-                    new ParkCarResponse(slot.getNumber(), car.getLicensePlate(), viewData)
+            return parkingCommitFailure(
+                    updateResult,
+                    "PARKING_COMMIT_CONFLICT",
+                    "Parking could not be completed because the parking lot changed. Refresh and try again.",
+                    "Parking failed because the update could not be committed."
             );
         } catch (DomainException exception) {
             return OperationResult.failure(
@@ -126,22 +139,34 @@ public final class ParkingService {
         }
 
         try {
-            ParkingLot parkingLot = parkingLotRepository.load(parkingLotSize);
-            Car removedCar = parkingLot.unpark(request.getSlotNumber());
+            ParkingLotUpdateResult<UnparkCarResponse> updateResult = parkingLotRepository.update(
+                    parkingLotSize,
+                    parkingLot -> {
+                        Car removedCar = parkingLot.unpark(request.getSlotNumber());
+                        ParkingLotViewData viewData = toParkingLotViewData(parkingLot);
 
-            if (!parkingLotRepository.save(parkingLot)) {
-                return OperationResult.failure(
-                        "UNPARK_SAVE_FAILED",
-                        "Failed to save parking data. Car was not unparked permanently.",
-                        "Check file permissions and try again."
+                        return new UnparkCarResponse(
+                                request.getSlotNumber(),
+                                removedCar.getLicensePlate(),
+                                viewData
+                        );
+                    }
+            );
+
+            if (updateResult.isCommitted()) {
+                UnparkCarResponse response = updateResult.getData();
+
+                return OperationResult.success(
+                        "Car " + response.getLicensePlate() + " unparked from slot " + response.getSlotNumber(),
+                        response
                 );
             }
 
-            ParkingLotViewData viewData = toParkingLotViewData(parkingLot);
-
-            return OperationResult.success(
-                    "Car " + removedCar.getLicensePlate() + " unparked from slot " + request.getSlotNumber(),
-                    new UnparkCarResponse(request.getSlotNumber(), removedCar.getLicensePlate(), viewData)
+            return parkingCommitFailure(
+                    updateResult,
+                    "UNPARK_COMMIT_CONFLICT",
+                    "Unparking could not be completed because the parking lot changed. Refresh and try again.",
+                    "Unparking failed because the update could not be committed."
             );
         } catch (DomainException exception) {
             return OperationResult.failure(
@@ -170,41 +195,56 @@ public final class ParkingService {
         }
 
         try {
-            ParkingLot parkingLot = parkingLotRepository.load(parkingLotSize);
-            List<String> unparkedPlates = new ArrayList<>();
+            ParkingLotUpdateResult<BatchUnparkResponse> updateResult = parkingLotRepository.update(
+                    parkingLotSize,
+                    parkingLot -> {
+                        List<String> unparkedPlates = new ArrayList<>();
 
-            for (Integer slotNumber : request.getSlotNumbers()) {
-                Optional<ParkingSlot> optionalSlot = parkingLot.getSlot(slotNumber);
+                        for (Integer slotNumber : request.getSlotNumbers()) {
+                            Optional<ParkingSlot> optionalSlot = parkingLot.getSlot(slotNumber);
 
-                if (optionalSlot.isEmpty() || optionalSlot.get().isEmpty()) {
-                    continue;
-                }
+                            if (optionalSlot.isEmpty() || optionalSlot.get().isEmpty()) {
+                                continue;
+                            }
 
-                Car removedCar = parkingLot.unpark(slotNumber);
-                unparkedPlates.add(removedCar.getLicensePlate());
-            }
+                            Car removedCar = parkingLot.unpark(slotNumber);
+                            unparkedPlates.add(removedCar.getLicensePlate());
+                        }
 
-            if (unparkedPlates.isEmpty()) {
-                return OperationResult.failure(
-                        "NO_OCCUPIED_SLOTS_SELECTED",
-                        "No occupied slots were selected",
-                        "Select at least one occupied slot and try again."
+                        if (unparkedPlates.isEmpty()) {
+                            throw new IllegalStateException("No occupied slots were selected");
+                        }
+
+                        ParkingLotViewData viewData = toParkingLotViewData(parkingLot);
+
+                        return new BatchUnparkResponse(
+                                unparkedPlates.size(),
+                                unparkedPlates,
+                                viewData
+                        );
+                    }
+            );
+
+            if (updateResult.isCommitted()) {
+                BatchUnparkResponse response = updateResult.getData();
+
+                return OperationResult.success(
+                        "Unparked " + response.getUnparkedCount() + " car(s)",
+                        response
                 );
             }
 
-            if (!parkingLotRepository.save(parkingLot)) {
-                return OperationResult.failure(
-                        "BATCH_UNPARK_SAVE_FAILED",
-                        "Failed to save parking data. Batch unpark was not completed permanently.",
-                        "Check file permissions and try again."
-                );
-            }
-
-            ParkingLotViewData viewData = toParkingLotViewData(parkingLot);
-
-            return OperationResult.success(
-                    "Unparked " + unparkedPlates.size() + " car(s)",
-                    new BatchUnparkResponse(unparkedPlates.size(), unparkedPlates, viewData)
+            return parkingCommitFailure(
+                    updateResult,
+                    "BATCH_UNPARK_COMMIT_CONFLICT",
+                    "Batch unpark could not be completed because the parking lot changed. Refresh and try again.",
+                    "Batch unpark failed because the update could not be committed."
+            );
+        } catch (IllegalStateException exception) {
+            return OperationResult.failure(
+                    "NO_OCCUPIED_SLOTS_SELECTED",
+                    exception.getMessage(),
+                    "Select at least one occupied slot and try again."
             );
         } catch (DomainException exception) {
             return OperationResult.failure(
@@ -264,7 +304,32 @@ public final class ParkingService {
         }
     }
 
+    private <T> OperationResult<T> parkingCommitFailure(
+            ParkingLotUpdateResult<?> updateResult,
+            String conflictCode,
+            String conflictRecoveryStep,
+            String fallbackMessage
+    ) {
+        if (updateResult != null && updateResult.isConflict()) {
+            return OperationResult.failure(
+                    conflictCode,
+                    updateResult.getMessage(),
+                    conflictRecoveryStep
+            );
+        }
+
+        return OperationResult.failure(
+                "PARKING_UPDATE_FAILED",
+                updateResult == null ? fallbackMessage : updateResult.getMessage(),
+                "Try again. If the issue continues, restart the application."
+        );
+    }
+
     private ParkingLotViewData toParkingLotViewData(ParkingLot parkingLot) {
+        if (parkingLot == null) {
+            throw new IllegalArgumentException("Parking lot cannot be null");
+        }
+
         List<SlotViewData> slotViewData = new ArrayList<>();
 
         for (ParkingSlot slot : parkingLot.getSlots()) {
