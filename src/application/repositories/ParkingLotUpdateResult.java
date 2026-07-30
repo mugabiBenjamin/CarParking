@@ -20,11 +20,23 @@ public final class ParkingLotUpdateResult<T> {
     }
 
     public static <T> ParkingLotUpdateResult<T> committed(T data) {
-        return new ParkingLotUpdateResult<>(Status.COMMITTED, data, "Parking lot update committed successfully");
+        return committed(data, "Parking lot update committed successfully");
     }
 
     public static <T> ParkingLotUpdateResult<T> committed(T data, String message) {
+        if (data == null) {
+            throw new IllegalArgumentException("Committed parking lot update result must include data");
+        }
+
         return new ParkingLotUpdateResult<>(Status.COMMITTED, data, message);
+    }
+
+    public static ParkingLotUpdateResult<Void> committedWithoutData() {
+        return committedWithoutData("Parking lot update committed successfully");
+    }
+
+    public static ParkingLotUpdateResult<Void> committedWithoutData(String message) {
+        return new ParkingLotUpdateResult<>(Status.COMMITTED, null, message);
     }
 
     public static <T> ParkingLotUpdateResult<T> conflict(String message) {
@@ -40,6 +52,10 @@ public final class ParkingLotUpdateResult<T> {
     }
 
     public T getData() {
+        if (isCommitted() && data == null) {
+            throw new IllegalStateException("Committed result does not contain data. Use findData() for optional access.");
+        }
+
         return data;
     }
 
@@ -61,6 +77,10 @@ public final class ParkingLotUpdateResult<T> {
 
     public boolean isFailed() {
         return status == Status.FAILED;
+    }
+
+    public boolean hasData() {
+        return data != null;
     }
 
     private static String normalizeMessage(String value) {
