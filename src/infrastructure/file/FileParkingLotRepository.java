@@ -21,8 +21,7 @@ public final class FileParkingLotRepository implements ParkingLotRepository {
     public FileParkingLotRepository(
             FilePaths filePaths,
             ParkingLotFileMapper mapper,
-            AppLogger logger
-    ) {
+            AppLogger logger) {
         if (filePaths == null) {
             throw new IllegalArgumentException("File paths cannot be null");
         }
@@ -68,6 +67,7 @@ public final class FileParkingLotRepository implements ParkingLotRepository {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public synchronized <T> ParkingLotUpdateResult<T> update(int size, ParkingLotUpdateCommand<T> command) {
         validateSize(size);
 
@@ -83,6 +83,11 @@ public final class FileParkingLotRepository implements ParkingLotRepository {
 
             writeParkingLot(parkingLot);
 
+            if (result == null) {
+                return (ParkingLotUpdateResult<T>) ParkingLotUpdateResult.committedWithoutData(
+                        "Parking lot update committed successfully without response data");
+            }
+
             return ParkingLotUpdateResult.committed(result);
         } catch (IOException exception) {
             logger.error("Failed to commit parking lot update", exception);
@@ -90,6 +95,9 @@ public final class FileParkingLotRepository implements ParkingLotRepository {
         } catch (SecurityException exception) {
             logger.error("Permission denied while committing parking lot update", exception);
             return ParkingLotUpdateResult.failed("Permission denied while saving parking data.");
+        } catch (Exception exception) {
+            logger.error("Unexpected error while committing parking lot update", exception);
+            return ParkingLotUpdateResult.failed("Parking update failed because an unexpected error occurred.");
         }
     }
 
@@ -111,15 +119,13 @@ public final class FileParkingLotRepository implements ParkingLotRepository {
                     temporaryFile,
                     targetFile,
                     StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.ATOMIC_MOVE
-            );
+                    StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException exception) {
             logger.warn("Atomic file move is not supported. Falling back to regular replace.");
             Files.move(
                     temporaryFile,
                     targetFile,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
+                    StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
