@@ -1,10 +1,11 @@
-package util;
+package presentation.swing.resources;
 
+import infrastructure.logging.AppLogger;
+
+import javax.swing.ImageIcon;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.swing.ImageIcon;
 
 public final class IconUtil {
     private static final String CAR_ICON = "/resources/icons/car.png";
@@ -18,47 +19,53 @@ public final class IconUtil {
 
     private static final int DEFAULT_ICON_SIZE = 16;
 
-    private IconUtil() {
-        throw new UnsupportedOperationException("IconUtil class cannot be instantiated");
+    private final AppLogger logger;
+
+    public IconUtil(AppLogger logger) {
+        if (logger == null) {
+            throw new IllegalArgumentException("Logger cannot be null");
+        }
+
+        this.logger = logger;
     }
 
-    public static ImageIcon createCarIcon(int width, int height) {
+    public ImageIcon createCarIcon(int width, int height) {
         return loadIcon(CAR_ICON, width, height);
     }
 
-    public static ImageIcon createSearchIcon(int width, int height) {
+    public ImageIcon createSearchIcon(int width, int height) {
         return loadIcon(SEARCH_ICON, width, height);
     }
 
-    public static ImageIcon createUnparkIcon(int width, int height) {
+    public ImageIcon createUnparkIcon(int width, int height) {
         return loadIcon(UNPARK_ICON, width, height);
     }
 
-    public static ImageIcon createCheckIcon(int width, int height, String type) {
-        if ("slot".equalsIgnoreCase(safeText(type))) {
+    public ImageIcon createCheckIcon(int width, int height, String type) {
+        if ("slot".equalsIgnoreCase(normalize(type))) {
             return loadIcon(CHECK_ICON, width, height);
         }
 
         return loadIcon(CHECK_GREEN_ICON, width, height);
     }
 
-    public static ImageIcon createXIcon(int width, int height) {
+    public ImageIcon createXIcon(int width, int height) {
         return loadIcon(X_ICON, width, height);
     }
 
-    public static ImageIcon createReportIcon(int width, int height) {
+    public ImageIcon createReportIcon(int width, int height) {
         return loadIcon(REPORT_ICON, width, height);
     }
 
-    public static ImageIcon createHelpIcon(int width, int height) {
+    public ImageIcon createHelpIcon(int width, int height) {
         return loadIcon(HELP_ICON, width, height);
     }
 
-    private static ImageIcon loadIcon(String path, int width, int height) {
-        String safePath = safeText(path);
+    private ImageIcon loadIcon(String path, int width, int height) {
+        String safePath = normalize(path);
 
         if (safePath.isEmpty()) {
-            Logger.warn("Icon path was empty");
+            logger.warn("Icon path was empty");
             return null;
         }
 
@@ -67,37 +74,33 @@ public final class IconUtil {
 
         try (InputStream stream = IconUtil.class.getResourceAsStream(safePath)) {
             if (stream == null) {
-                Logger.warn("Icon resource not found: " + safePath);
+                logger.warn("Icon resource not found: " + safePath);
                 return null;
             }
 
             ImageIcon icon = new ImageIcon(stream.readAllBytes());
 
             if (icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
-                Logger.warn("Invalid icon resource: " + safePath);
+                logger.warn("Invalid icon resource: " + safePath);
                 return null;
             }
 
             Image scaledImage = icon.getImage().getScaledInstance(safeWidth, safeHeight, Image.SCALE_SMOOTH);
             return new ImageIcon(scaledImage);
         } catch (IOException exception) {
-            Logger.error("Failed to load icon " + safePath, exception);
+            logger.error("Failed to load icon " + safePath, exception);
             return null;
         } catch (Exception exception) {
-            Logger.error("Unexpected error while loading icon " + safePath, exception);
+            logger.error("Unexpected error while loading icon " + safePath, exception);
             return null;
         }
     }
 
-    private static int normalizeSize(int size) {
-        if (size <= 0) {
-            return DEFAULT_ICON_SIZE;
-        }
-
-        return size;
+    private int normalizeSize(int size) {
+        return size <= 0 ? DEFAULT_ICON_SIZE : size;
     }
 
-    private static String safeText(String value) {
+    private String normalize(String value) {
         if (value == null) {
             return "";
         }

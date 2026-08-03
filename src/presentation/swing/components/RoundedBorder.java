@@ -1,4 +1,4 @@
-package view;
+package presentation.swing.components;
 
 import java.awt.BasicStroke;
 import java.awt.Component;
@@ -44,7 +44,11 @@ public final class RoundedBorder implements Border {
 
         try {
             graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            graphics2D.setColor(component.getBackground().darker());
+
+            if (component.getBackground() != null) {
+                graphics2D.setColor(component.getBackground().darker());
+            }
+
             graphics2D.setStroke(new BasicStroke(thickness));
             graphics2D.draw(new RoundRectangle2D.Double(
                     x,
@@ -70,10 +74,6 @@ public final class RoundedBorder implements Border {
     }
 
     private int normalizePositiveValue(int value, int fallback) {
-        if (value <= 0) {
-            return fallback;
-        }
-
-        return value;
+        return value <= 0 ? fallback : value;
     }
 }

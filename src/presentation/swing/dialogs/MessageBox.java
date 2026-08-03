@@ -1,4 +1,6 @@
-package util;
+package presentation.swing.dialogs;
+
+import infrastructure.logging.AppLogger;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -7,14 +9,20 @@ public final class MessageBox {
     private static final String INFO_TITLE = "Info";
     private static final String ERROR_TITLE = "Error";
     private static final String DEFAULT_ERROR_MESSAGE = "An unexpected error occurred.";
-    private static final String DEFAULT_RECOVERY_STEP = "Try the action again. If the issue continues, contact support.";
+    private static final String DEFAULT_RECOVERY_STEP = "Try again. If the issue continues, contact support.";
 
-    private MessageBox() {
-        throw new UnsupportedOperationException("MessageBox class cannot be instantiated");
+    private final AppLogger logger;
+
+    public MessageBox(AppLogger logger) {
+        if (logger == null) {
+            throw new IllegalArgumentException("Logger cannot be null");
+        }
+
+        this.logger = logger;
     }
 
-    public static void showInfo(String message) {
-        String safeMessage = normalizeMessage(message, "Operation completed.");
+    public void showInfo(String message) {
+        String safeMessage = normalize(message, "Operation completed.");
 
         showDialog(() -> JOptionPane.showMessageDialog(
                 null,
@@ -24,8 +32,8 @@ public final class MessageBox {
         ));
     }
 
-    public static void showError(String errorMessage, String... recoverySteps) {
-        String safeErrorMessage = normalizeMessage(errorMessage, DEFAULT_ERROR_MESSAGE);
+    public void showError(String errorMessage, String... recoverySteps) {
+        String safeErrorMessage = normalize(errorMessage, DEFAULT_ERROR_MESSAGE);
         String htmlMessage = buildErrorMessage(safeErrorMessage, recoverySteps);
 
         showDialog(() -> JOptionPane.showMessageDialog(
@@ -36,37 +44,33 @@ public final class MessageBox {
         ));
     }
 
-    private static String buildErrorMessage(String errorMessage, String... recoverySteps) {
+    private String buildErrorMessage(String errorMessage, String... recoverySteps) {
         StringBuilder builder = new StringBuilder();
 
         builder.append("<html>");
         builder.append("<p><b>Error:</b> ");
         builder.append(escapeHtml(errorMessage));
         builder.append("</p>");
+        builder.append("<p><font color='red'><b>Recovery Steps:</b></font></p>");
+        builder.append("<ul>");
 
         if (recoverySteps == null || recoverySteps.length == 0) {
-            builder.append("<p><font color='red'><b>Recovery Steps:</b></font></p><ul>");
             builder.append("<li>").append(escapeHtml(DEFAULT_RECOVERY_STEP)).append("</li>");
-            builder.append("</ul>");
         } else {
-            builder.append("<p><font color='red'><b>Recovery Steps:</b></font></p><ul>");
-
             for (String step : recoverySteps) {
-                String safeStep = normalizeMessage(step, DEFAULT_RECOVERY_STEP);
-                builder.append("<li>").append(escapeHtml(safeStep)).append("</li>");
+                builder.append("<li>").append(escapeHtml(normalize(step, DEFAULT_RECOVERY_STEP))).append("</li>");
             }
-
-            builder.append("</ul>");
         }
 
+        builder.append("</ul>");
         builder.append("</html>");
 
         return builder.toString();
     }
 
-    private static void showDialog(Runnable dialogAction) {
+    private void showDialog(Runnable dialogAction) {
         if (dialogAction == null) {
-            Logger.warn("MessageBox dialog action was null");
+            logger.warn("Dialog action was null");
             return;
         }
 
@@ -77,19 +81,19 @@ public final class MessageBox {
                 SwingUtilities.invokeLater(dialogAction);
             }
         } catch (Exception exception) {
-            Logger.error("Failed to display message dialog", exception);
+            logger.error("Failed to display dialog", exception);
         }
     }
 
-    private static String normalizeMessage(String message, String fallback) {
-        if (message == null || message.trim().isEmpty()) {
+    private String normalize(String value, String fallback) {
+        if (value == null || value.trim().isEmpty()) {
             return fallback;
         }
 
-        return message.trim();
+        return value.trim();
     }
 
-    private static String escapeHtml(String value) {
+    private String escapeHtml(String value) {
         if (value == null) {
             return "";
         }
